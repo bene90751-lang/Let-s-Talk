@@ -13,7 +13,7 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background: #000000;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             height: 100vh;
             display: flex;
             justify-content: center;
@@ -21,9 +21,12 @@
         }
 
         .chat-container {
-            width: 100%;
-            height: 100vh;
-            background: #1a1a1a;
+            width: 90%;
+            max-width: 500px;
+            height: 90vh;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -32,7 +35,7 @@
         .chat-header {
             background: #4a90e2;
             color: white;
-            padding: 15px 20px;
+            padding: 20px;
             text-align: center;
         }
 
@@ -47,151 +50,11 @@
             opacity: 0.9;
         }
 
-        /* Stories Section */
-        .stories-container {
-            padding: 15px;
-            background: #2d2d2d;
-            border-bottom: 1px solid #444;
-            overflow-x: auto;
-            white-space: nowrap;
-            display: flex;
-            gap: 15px;
-        }
-
-        .story-item {
-            display: inline-flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-            cursor: pointer;
-            position: relative;
-        }
-
-        .story-avatar {
-            width: 70px;
-            height: 70px;
-            border-radius: 50%;
-            background: linear-gradient(45deg, #4a90e2, #FF69B4);
-            padding: 3px;
-        }
-
-        .story-avatar img {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid #2d2d2d;
-        }
-
-        .story-name {
-            color: white;
-            font-size: 12px;
-            font-weight: 500;
-        }
-
-        .story-add {
-            width: 70px;
-            height: 70px;
-            border-radius: 50%;
-            background: #4a90e2;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 30px;
-            color: white;
-            cursor: pointer;
-            border: 3px solid #2d2d2d;
-        }
-
-        /* Story Viewer Modal */
-        .story-viewer {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.95);
-            z-index: 2000;
-            display: none;
-            flex-direction: column;
-        }
-
-        .story-viewer.active {
-            display: flex;
-        }
-
-        .story-header {
-            padding: 20px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            color: white;
-        }
-
-        .story-close {
-            font-size: 30px;
-            cursor: pointer;
-        }
-
-        .story-progress {
-            flex: 1;
-            height: 4px;
-            background: #444;
-            border-radius: 2px;
-            overflow: hidden;
-        }
-
-        .story-progress-bar {
-            height: 100%;
-            background: #4a90e2;
-            width: 0%;
-            transition: width 0.1s linear;
-        }
-
-        .story-image-container {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .story-image {
-            max-width: 100%;
-            max-height: 80vh;
-            border-radius: 10px;
-        }
-
-        .story-footer {
-            padding: 20px;
-            display: flex;
-            gap: 10px;
-        }
-
-        .story-input {
-            flex: 1;
-            padding: 12px;
-            background: #2d2d2d;
-            border: 1px solid #444;
-            border-radius: 25px;
-            color: white;
-            outline: none;
-        }
-
-        .story-reply-btn {
-            padding: 12px 25px;
-            background: #4a90e2;
-            border: none;
-            border-radius: 25px;
-            color: white;
-            cursor: pointer;
-        }
-
         .messages-container {
             flex: 1;
             overflow-y: auto;
             padding: 20px;
-            background: #1a1a1a;
+            background: #fafafa;
             display: flex;
             flex-direction: column;
             gap: 15px;
@@ -203,9 +66,6 @@
             flex-direction: column;
             position: relative;
             animation: fadeIn 0.3s ease-in;
-            cursor: pointer;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
         }
 
         @keyframes fadeIn {
@@ -226,8 +86,7 @@
             border-radius: 20px;
             word-wrap: break-word;
             position: relative;
-            color: white;
-            transition: all 0.2s;
+            color: black;
         }
 
         .message-right .message-bubble {
@@ -243,7 +102,7 @@
         .message-sender {
             font-size: 12px;
             margin-bottom: 4px;
-            color: #ffffff;
+            color: black;
             font-weight: 600;
         }
 
@@ -253,7 +112,7 @@
 
         .message-time {
             font-size: 11px;
-            color: #cccccc;
+            color: black;
             margin-top: 4px;
             opacity: 0.8;
             font-weight: 500;
@@ -291,175 +150,10 @@
             height: 40px;
         }
 
-        /* Message Options Menu */
-        .message-options {
-            position: fixed;
-            background: #2d2d2d;
-            border-radius: 10px;
-            padding: 10px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
-            z-index: 1000;
-            display: none;
-            flex-direction: column;
-            min-width: 150px;
-        }
-
-        .message-options.show {
-            display: flex;
-        }
-
-        .message-option {
-            padding: 12px 15px;
-            color: white;
-            cursor: pointer;
-            border-radius: 5px;
-            transition: background 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .message-option:hover {
-            background: #4a4a4a;
-        }
-
-        .message-option.delete {
-            color: #ff6b6b;
-        }
-
-        .message-option.copy {
-            color: #4a90e2;
-        }
-
-        .message-option.edit {
-            color: #4CAF50;
-        }
-
-        /* Edit Modal */
-        .edit-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-        }
-
-        .edit-modal.show {
-            display: flex;
-        }
-
-        .edit-content {
-            background: #2d2d2d;
-            padding: 30px;
-            border-radius: 15px;
-            width: 90%;
-            max-width: 500px;
-        }
-
-        .edit-content h3 {
-            color: white;
-            margin-bottom: 20px;
-        }
-
-        .edit-input {
-            width: 100%;
-            padding: 15px;
-            background: #3d3d3d;
-            border: 1px solid #4a4a4a;
-            border-radius: 10px;
-            color: white;
-            font-size: 16px;
-            margin-bottom: 20px;
-            resize: none;
-        }
-
-        .edit-input:focus {
-            outline: none;
-            border-color: #4a90e2;
-        }
-
-        .edit-buttons {
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
-        }
-
-        .edit-btn {
-            padding: 10px 25px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: background 0.2s;
-        }
-
-        .edit-btn.save {
-            background: #4CAF50;
-            color: white;
-        }
-
-        .edit-btn.cancel {
-            background: #dc3545;
-            color: white;
-        }
-
-        /* Typing Indicators */
-        .typing-container {
-            padding: 10px 20px;
-            display: flex;
-            gap: 15px;
-            background: #1a1a1a;
-            border-top: 1px solid #333;
-        }
-
-        .typing-indicator {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: #888;
-            font-size: 13px;
-            font-style: italic;
-            background: #2d2d2d;
-            padding: 8px 15px;
-            border-radius: 20px;
-            flex: 1;
-        }
-
-        .typing-indicator span {
-            width: 8px;
-            height: 8px;
-            background: #888;
-            border-radius: 50%;
-            display: inline-block;
-            animation: typing 1.4s infinite ease-in-out;
-        }
-
-        .typing-indicator span:nth-child(1) {
-            animation-delay: 0s;
-        }
-
-        .typing-indicator span:nth-child(2) {
-            animation-delay: 0.2s;
-        }
-
-        .typing-indicator span:nth-child(3) {
-            animation-delay: 0.4s;
-        }
-
-        @keyframes typing {
-            0%, 60%, 100% { transform: translateY(0); }
-            30% { transform: translateY(-10px); }
-        }
-
         .input-container {
             padding: 20px;
-            background: #1a1a1a;
-            border-top: 1px solid #333;
+            background: white;
+            border-top: 1px solid #e0e0e0;
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
@@ -469,20 +163,14 @@
             flex: 1;
             min-width: 200px;
             padding: 12px;
-            background: #2d2d2d;
-            border: 1px solid #444;
+            border: 1px solid #e0e0e0;
             border-radius: 25px;
             outline: none;
             font-size: 14px;
-            color: white;
         }
 
         #messageInput:focus {
             border-color: #4a90e2;
-        }
-
-        #messageInput::placeholder {
-            color: #888;
         }
 
         .action-btn {
@@ -500,7 +188,7 @@
             background: #357abd;
         }
 
-        #imageUpload, #voiceUpload, #storyUpload {
+        #imageUpload, #voiceUpload {
             display: none;
         }
 
@@ -535,29 +223,7 @@
             <p>Chat with Maria</p>
         </div>
 
-        <!-- Stories Section -->
-        <div class="stories-container" id="storiesContainer">
-            <div class="story-item" id="addStoryBtn">
-                <div class="story-add">+</div>
-                <span class="story-name">Add Story</span>
-            </div>
-        </div>
-
-        <div class="messages-container" id="messagesContainer">
-            <div style="color: #888; text-align: center; padding: 20px;">No messages yet. Start chatting!</div>
-        </div>
-
-        <!-- Typing Indicators -->
-        <div class="typing-container">
-            <div class="typing-indicator" id="zeeTyping" style="display: none;">
-                <span></span><span></span><span></span>
-                Zee is typing...
-            </div>
-            <div class="typing-indicator" id="mariaTyping" style="display: none;">
-                <span></span><span></span><span></span>
-                Maria is typing...
-            </div>
-        </div>
+        <div class="messages-container" id="messagesContainer"></div>
 
         <div class="input-container">
             <input type="text" id="messageInput" placeholder="Type your message...">
@@ -570,47 +236,10 @@
     <!-- Hidden file inputs -->
     <input type="file" id="imageUpload" accept="image/*">
     <input type="file" id="voiceUpload" accept="audio/*">
-    <input type="file" id="storyUpload" accept="image/*">
 
     <!-- Image preview modal -->
     <div class="modal" id="imageModal">
         <img id="modalImage" src="" alt="Preview">
-    </div>
-
-    <!-- Story Viewer -->
-    <div class="story-viewer" id="storyViewer">
-        <div class="story-header">
-            <span class="story-close" id="closeStoryBtn">×</span>
-            <div class="story-progress">
-                <div class="story-progress-bar" id="storyProgress"></div>
-            </div>
-        </div>
-        <div class="story-image-container">
-            <img class="story-image" id="storyImage" src="" alt="Story">
-        </div>
-        <div class="story-footer">
-            <input type="text" class="story-input" id="storyReply" placeholder="Reply to story...">
-            <button class="story-reply-btn" id="storyReplyBtn">Send</button>
-        </div>
-    </div>
-
-    <!-- Message Options Menu -->
-    <div class="message-options" id="messageOptions">
-        <div class="message-option copy" id="copyOption">📋 Copy</div>
-        <div class="message-option edit" id="editOption">✏️ Edit</div>
-        <div class="message-option delete" id="deleteOption">🗑️ Delete</div>
-    </div>
-
-    <!-- Edit Modal -->
-    <div class="edit-modal" id="editModal">
-        <div class="edit-content">
-            <h3>Edit Message</h3>
-            <textarea class="edit-input" id="editInput" rows="3"></textarea>
-            <div class="edit-buttons">
-                <button class="edit-btn cancel" id="cancelEdit">Cancel</button>
-                <button class="edit-btn save" id="saveEdit">Save</button>
-            </div>
-        </div>
     </div>
 
     <!-- Firebase SDK -->
@@ -627,46 +256,20 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
         const messagesRef = database.ref('messages');
-        const storiesRef = database.ref('stories');
-        const typingRef = database.ref('typing');
 
         // DOM elements
         const messagesContainer = document.getElementById('messagesContainer');
-        const storiesContainer = document.getElementById('storiesContainer');
         const messageInput = document.getElementById('messageInput');
         const sendBtn = document.getElementById('sendBtn');
         const imageBtn = document.getElementById('imageBtn');
         const voiceBtn = document.getElementById('voiceBtn');
         const imageUpload = document.getElementById('imageUpload');
         const voiceUpload = document.getElementById('voiceUpload');
-        const storyUpload = document.getElementById('storyUpload');
-        const addStoryBtn = document.getElementById('addStoryBtn');
         const imageModal = document.getElementById('imageModal');
         const modalImage = document.getElementById('modalImage');
-        const storyViewer = document.getElementById('storyViewer');
-        const storyImage = document.getElementById('storyImage');
-        const storyProgress = document.getElementById('storyProgress');
-        const storyReply = document.getElementById('storyReply');
-        const storyReplyBtn = document.getElementById('storyReplyBtn');
-        const closeStoryBtn = document.getElementById('closeStoryBtn');
-        const messageOptions = document.getElementById('messageOptions');
-        const copyOption = document.getElementById('copyOption');
-        const editOption = document.getElementById('editOption');
-        const deleteOption = document.getElementById('deleteOption');
-        const editModal = document.getElementById('editModal');
-        const editInput = document.getElementById('editInput');
-        const cancelEdit = document.getElementById('cancelEdit');
-        const saveEdit = document.getElementById('saveEdit');
-        const zeeTyping = document.getElementById('zeeTyping');
-        const mariaTyping = document.getElementById('mariaTyping');
 
-        // State
+        // Track message count for alternating
         let messageCount = 0;
-        let selectedMessageId = null;
-        let selectedMessageContent = '';
-        let longPressTimer;
-        let currentStory = null;
-        let storyTimer;
 
         // Format timestamp
         function formatTimestamp(timestamp) {
@@ -694,8 +297,162 @@
             });
         }
 
-        // Show notification
-        function showNotification(message) {
-            const notification = document.createElement('div');
-            notification.textContent = message;
-            notification.styl
+        // Load messages
+        messagesRef.orderByChild('timestamp').on('value', (snapshot) => {
+            messagesContainer.innerHTML = '';
+            let index = 0;
+            
+            snapshot.forEach((childSnapshot) => {
+                const message = childSnapshot.val();
+                
+                if (message.sender && message.timestamp) {
+                    // Alternate sides: even index = right (Zee), odd index = left (Maria)
+                    const isRight = (index % 2 === 0);
+                    const sender = isRight ? 'Zee' : 'Maria';
+                    
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = `message ${isRight ? 'message-right' : 'message-left'}`;
+                    
+                    let content = '';
+                    
+                    if (message.text) {
+                        content = `<div class="message-bubble">${message.text.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>`;
+                    } else if (message.image) {
+                        content = `
+                            <div class="message-bubble">
+                                <div class="message-image" onclick="showImage('${message.image}')">
+                                    <img src="${message.image}" alt="Image">
+                                </div>
+                            </div>
+                        `;
+                    } else if (message.voice) {
+                        content = `
+                            <div class="message-bubble">
+                                <div class="voice-message">
+                                    <audio controls src="${message.voice}"></audio>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    
+                    messageDiv.innerHTML = `
+                        <div class="message-sender">${sender}</div>
+                        ${content}
+                        <div class="message-time">${formatTimestamp(message.timestamp)}</div>
+                    `;
+                    
+                    messagesContainer.appendChild(messageDiv);
+                    index++;
+                }
+            });
+            
+            // Update message count
+            messageCount = index;
+            
+            // Scroll to bottom
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        });
+
+        // Send message function
+        async function sendMessage(content, type = 'text') {
+            if (!content) return;
+
+            // Determine sender based on message count
+            const sender = (messageCount % 2 === 0) ? 'Zee' : 'Maria';
+            
+            const message = {
+                sender: sender,
+                timestamp: Date.now()
+            };
+
+            if (type === 'text') {
+                message.text = content;
+            } else if (type === 'image') {
+                message.image = content;
+            } else if (type === 'voice') {
+                message.voice = content;
+            }
+
+            try {
+                await messagesRef.push(message);
+                if (type === 'text') {
+                    messageInput.value = '';
+                }
+                messageCount++; // Increment for next message
+            } catch (error) {
+                console.error('Error sending message:', error);
+                alert('Failed to send message. Please try again.');
+            }
+        }
+
+        // Send text message
+        sendBtn.addEventListener('click', () => {
+            const text = messageInput.value.trim();
+            if (text) {
+                sendMessage(text, 'text');
+            }
+        });
+
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const text = messageInput.value.trim();
+                if (text) {
+                    sendMessage(text, 'text');
+                }
+            }
+        });
+
+        // Send image
+        imageBtn.addEventListener('click', () => {
+            imageUpload.click();
+        });
+
+        imageUpload.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (file && file.type.startsWith('image/')) {
+                try {
+                    const base64Image = await fileToBase64(file);
+                    await sendMessage(base64Image, 'image');
+                } catch (error) {
+                    console.error('Error processing image:', error);
+                    alert('Failed to process image. Please try again.');
+                }
+            }
+            imageUpload.value = '';
+        });
+
+        // Send voice
+        voiceBtn.addEventListener('click', () => {
+            voiceUpload.click();
+        });
+
+        voiceUpload.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (file && file.type.startsWith('audio/')) {
+                try {
+                    const base64Audio = await fileToBase64(file);
+                    await sendMessage(base64Audio, 'voice');
+                } catch (error) {
+                    console.error('Error processing voice:', error);
+                    alert('Failed to process voice message. Please try again.');
+                }
+            }
+            voiceUpload.value = '';
+        });
+
+        // Image modal
+        window.showImage = function(imageUrl) {
+            modalImage.src = imageUrl;
+            imageModal.classList.add('active');
+        };
+
+        imageModal.addEventListener('click', () => {
+            imageModal.classList.remove('active');
+            modalImage.src = '';
+        });
+
+        console.log('Let\'s Talk app is ready!');
+    </script>
+</body>
+    </html>
