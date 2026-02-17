@@ -5,8 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Let's Talk</title>
 <style>
-body { font-family: Arial; background:#121212; color:#fff; margin:0; display:flex; justify-content:center; align-items:center; height:100vh; }
-#authContainer, #chatContainer { width:400px; max-width:95%; border:2px solid #333; border-radius:10px; background:#1e1e1e; display:flex; flex-direction:column; }
+body {
+  font-family: Arial; background:#121212; color:#fff; margin:0; display:flex; justify-content:center; align-items:center; height:100vh;
+}
+#authContainer, #chatContainer {
+  width:400px; max-width:95%; border:2px solid #333; border-radius:10px; background:#1e1e1e; display:flex; flex-direction:column;
+}
 #authContainer { padding:20px; }
 input { padding:10px; margin:5px 0; border-radius:5px; border:none; width:100%; background:#333; color:#fff; }
 button { padding:10px; border:none; border-radius:5px; background:#000; color:#fff; cursor:pointer; font-weight:bold; margin-top:5px; }
@@ -30,7 +34,7 @@ audio { margin-top:5px; width:100%; }
   <input type="email" id="email" placeholder="Email">
   <input type="password" id="password" placeholder="Password">
   <button id="loginBtn">Login</button>
-  <button id="signupBtn">Sign Up</button>
+  <button id="signupBtn" style="display:none;">Sign Up</button>
   <p id="authSwitch" style="text-align:center; cursor:pointer; color:#aaa; margin-top:10px;">Don't have an account? Sign Up</p>
   <p id="authMessage" style="color:#f55; text-align:center;"></p>
 </div>
@@ -38,10 +42,6 @@ audio { margin-top:5px; width:100%; }
 <div id="chatContainer">
   <div id="chatHeader">
     <span>Let's Talk</span>
-    <select id="senderSelect">
-      <option value="Zee">Zee</option>
-      <option value="Maria">Maria</option>
-    </select>
   </div>
   <div id="typingIndicator"></div>
   <div id="messages"></div>
@@ -62,8 +62,17 @@ audio { margin-top:5px; width:100%; }
 
 <script>
 // Firebase config
-const firebaseConfig = { databaseURL: "https://let-s-talk-e57c6-default-rtdb.firebaseio.com/" };
+const firebaseConfig = {
+  apiKey: "AIzaSyBMKrFDt5uvRDjTDDeaRKQQHXNrwc0SAEo",
+  authDomain: "let-s-talk-e57c6.firebaseapp.com",
+  databaseURL: "https://let-s-talk-e57c6-default-rtdb.firebaseio.com",
+  projectId: "let-s-talk-e57c6",
+  storageBucket: "let-s-talk-e57c6.appspot.com",
+  messagingSenderId: "958080107908",
+  appId: "1:958080107908:web:d9b11b958af59bb315c9d1"
+};
 firebase.initializeApp(firebaseConfig);
+
 const auth = firebase.auth();
 const db = firebase.database();
 const storage = firebase.storage();
@@ -81,13 +90,14 @@ const authMessage = document.getElementById('authMessage');
 const messagesDiv = document.getElementById('messages');
 const inputField = document.getElementById('userInput');
 const sendBtn = document.getElementById('sendBtn');
-const senderSelect = document.getElementById('senderSelect');
 const typingIndicator = document.getElementById('typingIndicator');
 const imageBtn = document.getElementById('imageBtn');
 const voiceBtn = document.getElementById('voiceBtn');
 const logoutBtn = document.getElementById('logoutBtn');
 
 let isLoginMode = true;
+
+// Switch login/signup
 authSwitch.addEventListener('click', () => {
   isLoginMode = !isLoginMode;
   authSwitch.textContent = isLoginMode ? "Don't have an account? Sign Up" : "Already have an account? Login";
@@ -100,21 +110,26 @@ authSwitch.addEventListener('click', () => {
 loginBtn.addEventListener('click', () => {
   const email = emailField.value.trim();
   const password = passwordField.value.trim();
-  auth.signInWithEmailAndPassword(email, password).catch(err => authMessage.textContent = err.message);
+  if(!email || !password) return authMessage.textContent = 'Enter email & password';
+  auth.signInWithEmailAndPassword(email, password)
+      .catch(err => authMessage.textContent = err.message);
 });
 
 // Sign Up
 signupBtn.addEventListener('click', () => {
   const email = emailField.value.trim();
   const password = passwordField.value.trim();
-  auth.createUserWithEmailAndPassword(email, password).catch(err => authMessage.textContent = err.message);
+  if(!email || !password) return authMessage.textContent = 'Enter email & password';
+  auth.createUserWithEmailAndPassword(email, password)
+      .catch(err => authMessage.textContent = err.message);
 });
 
 // Auth state listener
 auth.onAuthStateChanged(user => {
-  if (user) {
+  if(user){
     authContainer.style.display = 'none';
     chatContainer.style.display = 'flex';
+    listenMessages();
   } else {
     authContainer.style.display = 'flex';
     chatContainer.style.display = 'none';
@@ -124,39 +139,32 @@ auth.onAuthStateChanged(user => {
 // Logout
 logoutBtn.addEventListener('click', () => auth.signOut());
 
-// Typing indicator
-let typingTimeout;
-inputField.addEventListener('input', () => {
-  const sender = senderSelect.value;
-  db.ref('typing/' + sender).set(true);
-  clearTimeout(typingTimeout);
-  typingTimeout = setTimeout(() => db.ref('typing/' + sender).set(false), 1000);
-});
-db.ref('typing').on('value', snap => {
-  const typing = snap.val() || {};
-  if (typing['Zee'] && senderSelect.value !== 'Zee') typingIndicator.textContent = 'Zee is typing...';
-  else if (typing['Maria'] && senderSelect.value !== 'Maria') typingIndicator.textContent = 'Maria is typing...';
-  else typingIndicator.textContent = '';
-});
+// Private chat room: use UID to separate chats
+function getChatRef() {
+  const uid = auth.currentUser.uid;
+  const otherUID = (uid === 'ZeeUID') ? 'MariaUID' : 'ZeeUID'; // replace with your real UIDs if needed
+  return db.ref('chats/' + [uid, otherUID].sort().join('_'));
+}
 
-// Chat functions
-function addMessage(id, sender, data) {
+// Add message
+function addMessage(id, data){
   const msgDiv = document.createElement('div');
   msgDiv.className = 'message';
   msgDiv.dataset.id = id;
-  if (sender==='Zee') msgDiv.style.background='#0077ff', msgDiv.style.alignSelf='flex-end';
-  else msgDiv.style.background='#00bb44', msgDiv.style.alignSelf='flex-start';
-  const time = new Date(data.timestamp).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
-  const date = new Date(data.timestamp).toLocaleDateString();
+  msgDiv.style.background = (data.sender === auth.currentUser.email) ? '#0077ff' : '#00bb44';
+  msgDiv.style.alignSelf = (data.sender === auth.currentUser.email) ? 'flex-end' : 'flex-start';
   let content = '';
-  if(data.text) content += `<strong>${sender}:</strong> ${data.text}`;
+  if(data.text) content += `<strong>${data.sender}:</strong> ${data.text}`;
   if(data.image) content += `<img class="chatImage" src="${data.image}">`;
   if(data.voice) content += `<audio controls src="${data.voice}"></audio>`;
+  const time = new Date(data.timestamp).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+  const date = new Date(data.timestamp).toLocaleDateString();
   content += `<span>${date} ${time}</span>`;
   msgDiv.innerHTML = content;
   messagesDiv.appendChild(msgDiv);
   messagesDiv.scrollTop = messagesDiv.scrollHeight;
 
+  // Edit message
   let pressTimer;
   msgDiv.addEventListener('mousedown', ()=>{ pressTimer = setTimeout(()=>editMessage(id,data),600); });
   msgDiv.addEventListener('mouseup', ()=>clearTimeout(pressTimer));
@@ -166,71 +174,68 @@ function addMessage(id, sender, data) {
 }
 
 // Send text
-function sendMessage() {
+function sendMessage(){
   const text = inputField.value.trim();
   if(!text) return;
-  const sender = senderSelect.value;
-  const timestamp = Date.now();
-  db.ref('messages').push({ sender, text, timestamp });
+  const chatRef = getChatRef();
+  chatRef.push({sender: auth.currentUser.email, text, timestamp: Date.now()});
   inputField.value='';
 }
 sendBtn.addEventListener('click', sendMessage);
-inputField.addEventListener('keypress', e=>{if(e.key==='Enter') sendMessage();});
+inputField.addEventListener('keypress', e=>{ if(e.key==='Enter') sendMessage(); });
 
 // Send image
 imageBtn.addEventListener('click', ()=>{
-  const fileInput=document.createElement('input');
+  const fileInput = document.createElement('input');
   fileInput.type='file'; fileInput.accept='image/*';
-  fileInput.onchange=e=>{
-    const file=e.target.files[0];
-    if(!file) return;
-    const sender = senderSelect.value;
-    const timestamp = Date.now();
-    const storageRef = storage.ref('images/' + timestamp + '_' + file.name);
-    storageRef.put(file).then(()=>storageRef.getDownloadURL().then(url=>{
-      db.ref('messages').push({sender,image:url,timestamp});
+  fileInput.onchange = e => {
+    const file = e.target.files[0]; if(!file) return;
+    const chatRef = getChatRef();
+    const storageRef = storage.ref('images/'+Date.now()+'_'+file.name);
+    storageRef.put(file).then(()=> storageRef.getDownloadURL().then(url=>{
+      chatRef.push({sender: auth.currentUser.email, image:url, timestamp: Date.now()});
     }));
   };
   fileInput.click();
 });
 
-// Send voice
+// Send voice (5s recording)
 voiceBtn.addEventListener('click', async ()=>{
   if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ alert("Audio not supported"); return;}
   const stream = await navigator.mediaDevices.getUserMedia({audio:true});
-  const mediaRecorder = new MediaRecorder(stream);
+  const recorder = new MediaRecorder(stream);
   const chunks=[];
-  mediaRecorder.ondataavailable=e=>chunks.push(e.data);
-  mediaRecorder.onstop=async()=>{
+  recorder.ondataavailable=e=>chunks.push(e.data);
+  recorder.onstop=async()=>{
     const blob = new Blob(chunks,{type:'audio/webm'});
-    const sender = senderSelect.value;
-    const timestamp = Date.now();
-    const storageRef = storage.ref('voice/'+timestamp+'.webm');
+    const storageRef = storage.ref('voice/'+Date.now()+'.webm');
     storageRef.put(blob).then(()=>storageRef.getDownloadURL().then(url=>{
-      db.ref('messages').push({sender,voice:url,timestamp});
+      const chatRef = getChatRef();
+      chatRef.push({sender: auth.currentUser.email, voice:url, timestamp: Date.now()});
     }));
   };
-  mediaRecorder.start();
-  setTimeout(()=>mediaRecorder.stop(),5000);
+  recorder.start();
+  setTimeout(()=>recorder.stop(),5000);
 });
 
 // Edit message
 function editMessage(id,data){
   const newText = prompt("Edit message:",data.text||"");
   if(newText===null) return;
-  db.ref('messages/'+id).update({text:newText});
+  const chatRef = getChatRef();
+  chatRef.child(id).update({text:newText});
 }
 
 // Listen messages
-db.ref('messages').on('child_added', snap=>addMessage(snap.key,snap.val().sender,snap.val()));
-db.ref('messages').on('child_changed', snap=>{
-  const msgDivs=document.querySelectorAll('.message');
-  msgDivs.forEach(div=>{if(div.dataset.id===snap.key) div.querySelector('strong').nextSibling.textContent=' '+(snap.val().text||'');});
-});
-db.ref('messages').on('child_removed', snap=>{
-  const msgDivs=document.querySelectorAll('.message');
-  msgDivs.forEach(div=>{if(div.dataset.id===snap.key) div.remove();});
-});
+function listenMessages(){
+  const chatRef = getChatRef();
+  chatRef.on('child_added', snap=>addMessage(snap.key,snap.val()));
+  chatRef.on('child_changed', snap=>{
+    const divs = document.querySelectorAll('.message');
+    divs.forEach(d=>{ if(d.dataset.id===snap.key) d.querySelector('strong').nextSibling.textContent=' '+(snap.val().text||''); });
+  });
+}
 </script>
+
 </body>
   </html>
