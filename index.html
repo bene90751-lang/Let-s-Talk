@@ -127,7 +127,6 @@
             max-height: 200px;
             border-radius: 10px;
             cursor: pointer;
-            margin: 5px 0;
         }
 
         .message-image img {
@@ -144,37 +143,11 @@
             background: rgba(255,255,255,0.2);
             padding: 8px 12px;
             border-radius: 25px;
-            margin: 5px 0;
         }
 
         .voice-message audio {
             max-width: 200px;
             height: 40px;
-        }
-
-        .voice-play-btn {
-            background: white;
-            border: none;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-        }
-
-        .typing-indicator {
-            padding: 10px 20px;
-            color: black;
-            font-style: italic;
-            font-size: 14px;
-            display: none;
-        }
-
-        .typing-indicator.visible {
-            display: block;
         }
 
         .input-container {
@@ -194,7 +167,6 @@
             border-radius: 25px;
             outline: none;
             font-size: 14px;
-            transition: border-color 0.3s;
         }
 
         #messageInput:focus {
@@ -210,33 +182,14 @@
             cursor: pointer;
             font-weight: 600;
             transition: background 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 5px;
         }
 
         .action-btn:hover {
             background: #357abd;
         }
 
-        .action-btn:disabled {
-            background: #cccccc;
-            cursor: not-allowed;
-        }
-
-        #imageUpload {
+        #imageUpload, #voiceUpload {
             display: none;
-        }
-
-        .recording-indicator {
-            color: red;
-            animation: pulse 1s infinite;
-        }
-
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
         }
 
         .modal {
@@ -272,18 +225,17 @@
 
         <div class="messages-container" id="messagesContainer"></div>
 
-        <div class="typing-indicator" id="typingIndicator">Maria is typing...</div>
-
         <div class="input-container">
-            <input type="text" id="messageInput" placeholder="Type your message..." maxlength="500">
-            <button class="action-btn" id="imageBtn" title="Send Image">📷</button>
-            <button class="action-btn" id="voiceBtn" title="Record Voice">🎤</button>
+            <input type="text" id="messageInput" placeholder="Type your message...">
+            <button class="action-btn" id="imageBtn">📷</button>
+            <button class="action-btn" id="voiceBtn">🎤</button>
             <button class="action-btn" id="sendBtn">Send</button>
         </div>
     </div>
 
-    <!-- Hidden file input for image upload -->
+    <!-- Hidden file inputs -->
     <input type="file" id="imageUpload" accept="image/*">
+    <input type="file" id="voiceUpload" accept="audio/*">
 
     <!-- Image preview modal -->
     <div class="modal" id="imageModal">
@@ -304,13 +256,6 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
         const messagesRef = database.ref('messages');
-        const typingRef = database.ref('typing');
-
-        // App state
-        let lastSender = 'Maria'; // Start with Maria so first message from Zee goes to right
-        let mediaRecorder;
-        let audioChunks = [];
-        let isRecording = false;
 
         // DOM elements
         const messagesContainer = document.getElementById('messagesContainer');
@@ -319,9 +264,12 @@
         const imageBtn = document.getElementById('imageBtn');
         const voiceBtn = document.getElementById('voiceBtn');
         const imageUpload = document.getElementById('imageUpload');
+        const voiceUpload = document.getElementById('voiceUpload');
         const imageModal = document.getElementById('imageModal');
         const modalImage = document.getElementById('modalImage');
-        const typingIndicator = document.getElementById('typingIndicator');
+
+        // Track message count for alternating
+        let messageCount = 0;
 
         // Format timestamp
         function formatTimestamp(timestamp) {
@@ -339,8 +287,8 @@
             }
         }
 
-        // Convert image to base64
-        function imageToBase64(file) {
+        // Convert file to base64
+        function fileToBase64(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
                 reader.readAsDataURL(file);
@@ -349,18 +297,21 @@
             });
         }
 
-        // Load messages and determine last sender
+        // Load messages
         messagesRef.orderByChild('timestamp').on('value', (snapshot) => {
             messagesContainer.innerHTML = '';
-            let lastMsg = null;
+            let index = 0;
             
             snapshot.forEach((childSnapshot) => {
                 const message = childSnapshot.val();
-                lastMsg = message;
                 
                 if (message.sender && message.timestamp) {
+                    // Alternate sides: even index = right (Zee), odd index = left (Maria)
+                    const isRight = (index % 2 === 0);
+                    const sender = isRight ? 'Zee' : 'Maria';
+                    
                     const messageDiv = document.createElement('div');
-                    messageDiv.className = `message ${message.sender === 'Zee' ? 'message-right' : 'message-left'}`;
+                    messageDiv.className = `message ${isRight ? 'message-right' : 'message-left'}`;
                     
                     let content = '';
                     
@@ -385,54 +336,29 @@
                     }
                     
                     messageDiv.innerHTML = `
-                        <div class="message-sender">${message.sender}</div>
+                        <div class="message-sender">${sender}</div>
                         ${content}
                         <div class="message-time">${formatTimestamp(message.timestamp)}</div>
                     `;
                     
                     messagesContainer.appendChild(messageDiv);
+                    index++;
                 }
             });
             
-            // Update lastSender for alternating messages
-            if (lastMsg && lastMsg.sender) {
-                lastSender = lastMsg.sender;
-            }
+            // Update message count
+            messageCount = index;
             
             // Scroll to bottom
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         });
 
-        // Typing indicator
-        messageInput.addEventListener('input', () => {
-            typingRef.child('Maria').set(true);
-            
-            clearTimeout(window.typingTimeout);
-            window.typingTimeout = setTimeout(() => {
-                typingRef.child('Maria').set(false);
-            }, 1000);
-        });
-
-        // Listen for typing status
-        typingRef.child('Zee').on('value', (snapshot) => {
-            if (snapshot.val()) {
-                typingIndicator.textContent = 'Zee is typing...';
-                typingIndicator.classList.add('visible');
-                
-                setTimeout(() => {
-                    typingRef.child('Zee').set(false);
-                }, 3000);
-            } else {
-                typingIndicator.classList.remove('visible');
-            }
-        });
-
         // Send message function
-        function sendMessage(content, type = 'text') {
+        async function sendMessage(content, type = 'text') {
             if (!content) return;
 
-            // Alternate sender
-            const sender = lastSender === 'Zee' ? 'Maria' : 'Zee';
+            // Determine sender based on message count
+            const sender = (messageCount % 2 === 0) ? 'Zee' : 'Maria';
             
             const message = {
                 sender: sender,
@@ -447,22 +373,16 @@
                 message.voice = content;
             }
 
-            messagesRef.push(message)
-                .then(() => {
-                    if (type === 'text') {
-                        messageInput.value = '';
-                    }
-                    
-                    // Clear typing indicator
-                    typingRef.child('Maria').set(false);
-                    
-                    // Update lastSender
-                    lastSender = sender;
-                })
-                .catch((error) => {
-                    console.error('Error sending message:', error);
-                    alert('Failed to send message. Please try again.');
-                });
+            try {
+                await messagesRef.push(message);
+                if (type === 'text') {
+                    messageInput.value = '';
+                }
+                messageCount++; // Increment for next message
+            } catch (error) {
+                console.error('Error sending message:', error);
+                alert('Failed to send message. Please try again.');
+            }
         }
 
         // Send text message
@@ -474,7 +394,7 @@
         });
 
         messageInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
+            if (e.key === 'Enter') {
                 e.preventDefault();
                 const text = messageInput.value.trim();
                 if (text) {
@@ -492,8 +412,8 @@
             const file = e.target.files[0];
             if (file && file.type.startsWith('image/')) {
                 try {
-                    const base64Image = await imageToBase64(file);
-                    sendMessage(base64Image, 'image');
+                    const base64Image = await fileToBase64(file);
+                    await sendMessage(base64Image, 'image');
                 } catch (error) {
                     console.error('Error processing image:', error);
                     alert('Failed to process image. Please try again.');
@@ -502,59 +422,24 @@
             imageUpload.value = '';
         });
 
-        // Voice recording
-        voiceBtn.addEventListener('click', async () => {
-            if (!isRecording) {
-                try {
-                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                    mediaRecorder = new MediaRecorder(stream);
-                    audioChunks = [];
-
-                    mediaRecorder.ondataavailable = (event) => {
-                        audioChunks.push(event.data);
-                    };
-
-                    mediaRecorder.onstop = () => {
-                        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                        const reader = new FileReader();
-                        reader.readAsDataURL(audioBlob);
-                        reader.onloadend = () => {
-                            sendMessage(reader.result, 'voice');
-                        };
-                        
-                        // Stop all tracks
-                        stream.getTracks().forEach(track => track.stop());
-                    };
-
-                    mediaRecorder.start();
-                    isRecording = true;
-                    voiceBtn.textContent = '⏹️';
-                    voiceBtn.style.background = '#ff4444';
-                    
-                    // Auto-stop after 30 seconds
-                    setTimeout(() => {
-                        if (isRecording) {
-                            stopRecording();
-                        }
-                    }, 30000);
-                    
-                } catch (error) {
-                    console.error('Error accessing microphone:', error);
-                    alert('Failed to access microphone. Please check permissions.');
-                }
-            } else {
-                stopRecording();
-            }
+        // Send voice
+        voiceBtn.addEventListener('click', () => {
+            voiceUpload.click();
         });
 
-        function stopRecording() {
-            if (mediaRecorder && isRecording) {
-                mediaRecorder.stop();
-                isRecording = false;
-                voiceBtn.textContent = '🎤';
-                voiceBtn.style.background = '#4a90e2';
+        voiceUpload.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (file && file.type.startsWith('audio/')) {
+                try {
+                    const base64Audio = await fileToBase64(file);
+                    await sendMessage(base64Audio, 'voice');
+                } catch (error) {
+                    console.error('Error processing voice:', error);
+                    alert('Failed to process voice message. Please try again.');
+                }
             }
-        }
+            voiceUpload.value = '';
+        });
 
         // Image modal
         window.showImage = function(imageUrl) {
@@ -567,13 +452,7 @@
             modalImage.src = '';
         });
 
-        // Clear typing indicator on page unload
-        window.addEventListener('beforeunload', () => {
-            typingRef.child('Zee').set(false);
-            typingRef.child('Maria').set(false);
-        });
-
         console.log('Let\'s Talk app is ready!');
     </script>
 </body>
-        </html>
+    </html>
