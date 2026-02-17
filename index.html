@@ -1,181 +1,407 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Let's Talk</title>
-<style>
-  body { font-family: Arial; background:#121212; color:#fff; margin:0; display:flex; justify-content:center; align-items:center; height:100vh; }
-  #chatContainer { width:400px; max-width:95%; border:2px solid #333; border-radius:10px; background:#1e1e1e; display:flex; flex-direction:column; height:600px; }
-  #chatHeader { padding:15px; font-size:22px; font-weight:bold; background:#000; border-top-left-radius:10px; border-top-right-radius:10px; display:flex; justify-content:space-between; align-items:center; }
-  #messages { flex:1; padding:10px; overflow-y:auto; display:flex; flex-direction:column; gap:10px; background:#1e1e1e; }
-  .message { max-width:70%; padding:10px; border-radius:10px; word-wrap:break-word; position:relative; cursor:pointer; }
-  .message span { display:block; font-size:12px; margin-top:5px; color:#aaa; }
-  #inputArea { display:flex; padding:10px; gap:5px; background:#1e1e1e; flex-wrap:wrap; border-bottom-left-radius:10px; border-bottom-right-radius:10px; }
-  #userInput { flex:1 1 100%; padding:10px; border-radius:5px; border:none; outline:none; background:#333; color:#fff; }
-  img.chatImage { max-width:100%; border-radius:8px; margin-top:5px; }
-  audio { margin-top:5px; width:100%; }
-  #typingIndicator { font-size:12px; color:#aaa; text-align:center; margin-bottom:5px; height:16px; }
-  #welcomeScreen { position:absolute; inset:0; background:#121212; display:flex; flex-direction:column; justify-content:center; align-items:center; z-index:1000; color:#fff; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Let's Talk - Chat App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .chat-container {
+            width: 90%;
+            max-width: 500px;
+            height: 90vh;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: #4a90e2;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .chat-header h1 {
+            font-size: 28px;
+            margin-bottom: 5px;
+            letter-spacing: 2px;
+        }
+
+        .chat-header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .user-selector {
+            padding: 15px;
+            background: #f5f5f5;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .user-btn {
+            padding: 10px 30px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .user-btn.active {
+            transform: scale(1.05);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        #userMe {
+            background: #4CAF50;
+            color: white;
+        }
+
+        #userMe.active {
+            background: #45a049;
+        }
+
+        #userMaria {
+            background: #FF69B4;
+            color: white;
+        }
+
+        #userMaria.active {
+            background: #ff1493;
+        }
+
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #fafafa;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            max-width: 70%;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message-right {
+            align-self: flex-end;
+        }
+
+        .message-left {
+            align-self: flex-start;
+        }
+
+        .message-bubble {
+            padding: 12px 16px;
+            border-radius: 20px;
+            word-wrap: break-word;
+            position: relative;
+        }
+
+        .message-right .message-bubble {
+            background: #4CAF50;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message-left .message-bubble {
+            background: #FF69B4;
+            color: white;
+            border-bottom-left-radius: 4px;
+        }
+
+        .message-sender {
+            font-size: 12px;
+            margin-bottom: 4px;
+            color: #666;
+        }
+
+        .message-right .message-sender {
+            text-align: right;
+        }
+
+        .message-time {
+            font-size: 11px;
+            color: #000;
+            margin-top: 4px;
+            opacity: 0.8;
+            font-weight: 500;
+        }
+
+        .message-right .message-time {
+            text-align: right;
+        }
+
+        .typing-indicator {
+            padding: 10px 20px;
+            color: #666;
+            font-style: italic;
+            font-size: 14px;
+            display: none;
+        }
+
+        .typing-indicator.visible {
+            display: block;
+        }
+
+        .input-container {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            gap: 10px;
+        }
+
+        #messageInput {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 25px;
+            outline: none;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        #messageInput:focus {
+            border-color: #4a90e2;
+        }
+
+        #sendBtn {
+            padding: 12px 25px;
+            background: #4a90e2;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        #sendBtn:hover {
+            background: #357abd;
+        }
+
+        #sendBtn:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+        }
+    </style>
 </head>
 <body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h1>Let's Talk</h1>
+            <p>Chat with Maria</p>
+        </div>
 
-<div id="welcomeScreen">
-  <h1>Welcome to Let's Talk</h1>
-  <p>Chat with your friends using text, images, and voice notes. Your messages are saved permanently.</p>
-</div>
+        <div class="user-selector">
+            <button class="user-btn" id="userMe">Me (Green)</button>
+            <button class="user-btn" id="userMaria">Maria (Pink)</button>
+        </div>
 
-<div id="chatContainer">
-  <div id="chatHeader">
-    <span>Let's Talk</span>
-    <select id="senderSelect">
-      <option value="Zee">Zee</option>
-      <option value="Maria">Maria</option>
-    </select>
-  </div>
-  <div id="typingIndicator"></div>
-  <div id="messages"></div>
-  <div id="inputArea">
-    <input type="text" id="userInput" placeholder="Type a message...">
-    <button id="sendBtn">Send</button>
-    <button id="imageBtn">📷</button>
-    <button id="voiceBtn">🎤</button>
-  </div>
-</div>
+        <div class="messages-container" id="messagesContainer"></div>
 
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
+        <div class="typing-indicator" id="typingIndicator">Maria is typing...</div>
 
-<script>
-  // Firebase config
-  const firebaseConfig = {
-    databaseURL: "https://let-s-talk-e57c6-default-rtdb.firebaseio.com/"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
-  const storage = firebase.storage();
+        <div class="input-container">
+            <input type="text" id="messageInput" placeholder="Type your message..." maxlength="500">
+            <button id="sendBtn">Send</button>
+        </div>
+    </div>
 
-  // DOM elements
-  const messagesDiv = document.getElementById('messages');
-  const inputField = document.getElementById('userInput');
-  const sendBtn = document.getElementById('sendBtn');
-  const senderSelect = document.getElementById('senderSelect');
-  const typingIndicator = document.getElementById('typingIndicator');
-  const imageBtn = document.getElementById('imageBtn');
-  const voiceBtn = document.getElementById('voiceBtn');
-  const welcomeScreen = document.getElementById('welcomeScreen');
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
-  // Welcome screen disappears after 3 seconds
-  setTimeout(()=>welcomeScreen.style.display='none',3000);
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            databaseURL: "https://let-s-talk-e57c6-default-rtdb.firebaseio.com/"
+        };
 
-  // Typing indicator
-  let typingTimeout;
-  inputField.addEventListener('input', () => {
-    const sender = senderSelect.value;
-    db.ref('typing/' + sender).set(true);
-    clearTimeout(typingTimeout);
-    typingTimeout = setTimeout(() => db.ref('typing/' + sender).set(false), 1000);
-  });
-  db.ref('typing').on('value', snap => {
-    const typing = snap.val() || {};
-    if (typing['Zee'] && senderSelect.value !== 'Zee') typingIndicator.textContent = 'Zee is typing...';
-    else if (typing['Maria'] && senderSelect.value !== 'Maria') typingIndicator.textContent = 'Maria is typing...';
-    else typingIndicator.textContent = '';
-  });
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        const messagesRef = database.ref('messages');
+        const typingRef = database.ref('typing');
 
-  // Add message to DOM
-  function addMessage(id, sender, data) {
-    const msgDiv = document.createElement('div');
-    msgDiv.className = 'message';
-    msgDiv.dataset.id = id;
-    if(sender==='Zee') msgDiv.style.background='#0077ff', msgDiv.style.alignSelf='flex-end';
-    else msgDiv.style.background='#00bb44', msgDiv.style.alignSelf='flex-start';
+        // App state
+        let currentUser = 'Me';
+        let typingTimeout;
 
-    const time = new Date(data.timestamp).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
-    const date = new Date(data.timestamp).toLocaleDateString();
-    let content = '';
-    if(data.text) content += `<strong>${sender}:</strong> ${data.text}`;
-    if(data.image) content += `<img class="chatImage" src="${data.image}">`;
-    if(data.voice) content += `<audio controls src="${data.voice}"></audio>`;
-    content += `<span>${date} ${time}</span>`;
-    msgDiv.innerHTML = content;
-    messagesDiv.appendChild(msgDiv);
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        // DOM elements
+        const messagesContainer = document.getElementById('messagesContainer');
+        const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const typingIndicator = document.getElementById('typingIndicator');
+        const userMeBtn = document.getElementById('userMe');
+        const userMariaBtn = document.getElementById('userMaria');
 
-    // Edit on long press
-    let pressTimer;
-    msgDiv.addEventListener('mousedown', ()=>{ pressTimer = setTimeout(()=>editMessage(id,data),600); });
-    msgDiv.addEventListener('mouseup', ()=>clearTimeout(pressTimer));
-    msgDiv.addEventListener('mouseleave', ()=>clearTimeout(pressTimer));
-    msgDiv.addEventListener('touchstart', ()=>{ pressTimer = setTimeout(()=>editMessage(id,data),600); });
-    msgDiv.addEventListener('touchend', ()=>clearTimeout(pressTimer));
-  }
+        // Set current user
+        userMeBtn.addEventListener('click', () => {
+            currentUser = 'Me';
+            userMeBtn.classList.add('active');
+            userMariaBtn.classList.remove('active');
+        });
 
-  // Send text
-  function sendMessage() {
-    const text = inputField.value.trim();
-    if(!text) return;
-    const sender = senderSelect.value;
-    const timestamp = Date.now();
-    db.ref('messages').push({ sender, text, timestamp });
-    inputField.value='';
-  }
-  sendBtn.addEventListener('click', sendMessage);
-  inputField.addEventListener('keypress', e=>{if(e.key==='Enter') sendMessage();});
+        userMariaBtn.addEventListener('click', () => {
+            currentUser = 'Maria';
+            userMariaBtn.classList.add('active');
+            userMeBtn.classList.remove('active');
+        });
 
-  // Send image
-  imageBtn.addEventListener('click', ()=>{
-    const fileInput=document.createElement('input');
-    fileInput.type='file'; fileInput.accept='image/*';
-    fileInput.onchange=e=>{
-      const file=e.target.files[0];
-      if(!file) return;
-      const sender = senderSelect.value;
-      const timestamp = Date.now();
-      const storageRef = storage.ref('images/' + timestamp + '_' + file.name);
-      storageRef.put(file).then(()=>storageRef.getDownloadURL().then(url=>{
-        db.ref('messages').push({sender,image:url,timestamp});
-      }));
-    };
-    fileInput.click();
-  });
+        // Format timestamp
+        function formatTimestamp(timestamp) {
+            const date = new Date(timestamp);
+            const today = new Date();
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
 
-  // Send voice
-  voiceBtn.addEventListener('click', async ()=>{
-    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ alert("Audio not supported"); return;}
-    const stream = await navigator.mediaDevices.getUserMedia({audio:true});
-    const mediaRecorder = new MediaRecorder(stream);
-    const chunks=[];
-    mediaRecorder.ondataavailable=e=>chunks.push(e.data);
-    mediaRecorder.onstop=async()=>{
-      const blob = new Blob(chunks,{type:'audio/webm'});
-      const sender = senderSelect.value;
-      const timestamp = Date.now();
-      const storageRef = storage.ref('voice/'+timestamp+'.webm');
-      storageRef.put(blob).then(()=>storageRef.getDownloadURL().then(url=>{
-        db.ref('messages').push({sender,voice:url,timestamp});
-      }));
-    };
-    mediaRecorder.start();
-    setTimeout(()=>mediaRecorder.stop(),5000);
-  });
+            if (date.toDateString() === today.toDateString()) {
+                return `Today at ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+            } else if (date.toDateString() === yesterday.toDateString()) {
+                return `Yesterday at ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+            } else {
+                return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+            }
+        }
 
-  // Edit message
-  function editMessage(id,data){
-    const newText = prompt("Edit message:",data.text||"");
-    if(newText===null) return;
-    db.ref('messages/'+id).update({text:newText});
-  }
+        // Load messages
+        messagesRef.orderByChild('timestamp').on('value', (snapshot) => {
+            messagesContainer.innerHTML = '';
+            
+            snapshot.forEach((childSnapshot) => {
+                const message = childSnapshot.val();
+                const messageId = childSnapshot.key;
+                
+                if (message.sender && message.timestamp && message.text) {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = `message ${message.sender === 'Me' ? 'message-right' : 'message-left'}`;
+                    
+                    messageDiv.innerHTML = `
+                        <div class="message-sender">${message.sender}</div>
+                        <div class="message-bubble">${message.text.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
+                        <div class="message-time">${formatTimestamp(message.timestamp)}</div>
+                    `;
+                    
+                    messagesContainer.appendChild(messageDiv);
+                }
+            });
+            
+            // Scroll to bottom
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        });
 
-  // Listen messages
-  db.ref('messages').on('child_added', snap=>addMessage(snap.key,snap.val().sender,snap.val()));
-  db.ref('messages').on('child_changed', snap=>{
-    const msgDivs=document.querySelectorAll('.message');
-    msgDivs.forEach(div=>{if(div.dataset.id===snap.key) div.querySelector('strong').nextSibling.textContent=' '+(snap.val().text||'');});
-  });
-</script>
+        // Typing indicator
+        messageInput.addEventListener('input', () => {
+            if (currentUser === 'Me') {
+                typingRef.child('Maria').set(true);
+                
+                clearTimeout(typingTimeout);
+                typingTimeout = setTimeout(() => {
+                    typingRef.child('Maria').set(false);
+                }, 1000);
+            }
+        });
+
+        // Listen for typing status
+        typingRef.child('Me').on('value', (snapshot) => {
+            if (snapshot.val()) {
+                typingIndicator.textContent = 'Me is typing...';
+                typingIndicator.classList.add('visible');
+                
+                setTimeout(() => {
+                    typingRef.child('Me').set(false);
+                }, 3000);
+            } else {
+                typingIndicator.classList.remove('visible');
+            }
+        });
+
+        // Send message
+        function sendMessage() {
+            const text = messageInput.value.trim();
+            
+            if (text) {
+                const message = {
+                    sender: currentUser,
+                    text: text,
+                    timestamp: Date.now()
+                };
+                
+                messagesRef.push(message)
+                    .then(() => {
+                        messageInput.value = '';
+                        
+                        // Clear typing indicator for current user
+                        if (currentUser === 'Me') {
+                            typingRef.child('Maria').set(false);
+                        } else {
+                            typingRef.child('Me').set(false);
+                        }
+                    })
+                    .catch((error) => {
+                        console.error('Error sending message:', error);
+                        alert('Failed to send message. Please try again.');
+                    });
+            }
+        }
+
+        // Event listeners
+        sendBtn.addEventListener('click', sendMessage);
+        
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Auto-scroll on new messages
+        messagesRef.limitToLast(1).on('child_added', () => {
+            setTimeout(() => {
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }, 100);
+        });
+
+        // Clear typing indicator on page unload
+        window.addEventListener('beforeunload', () => {
+            typingRef.child('Me').set(false);
+            typingRef.child('Maria').set(false);
+        });
+
+        console.log('Let\'s Talk app is ready!');
+    </script>
 </body>
-  </html>
+          </html>
