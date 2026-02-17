@@ -20,50 +20,6 @@
             align-items: center;
         }
 
-        /* Welcome Screen */
-        .welcome-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-            transition: opacity 1s ease;
-        }
-
-        .welcome-screen.fade-out {
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        .welcome-content {
-            text-align: center;
-            color: white;
-            animation: pulse 2s infinite;
-        }
-
-        .welcome-content h1 {
-            font-size: 48px;
-            margin-bottom: 20px;
-            letter-spacing: 4px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-
-        .welcome-content p {
-            font-size: 18px;
-            opacity: 0.9;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-
         .chat-container {
             width: 100%;
             height: 100vh;
@@ -76,7 +32,7 @@
         .chat-header {
             background: #4a90e2;
             color: white;
-            padding: 20px;
+            padding: 15px 20px;
             text-align: center;
         }
 
@@ -89,6 +45,146 @@
         .chat-header p {
             font-size: 14px;
             opacity: 0.9;
+        }
+
+        /* Stories Section */
+        .stories-container {
+            padding: 15px;
+            background: #2d2d2d;
+            border-bottom: 1px solid #444;
+            overflow-x: auto;
+            white-space: nowrap;
+            display: flex;
+            gap: 15px;
+        }
+
+        .story-item {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .story-avatar {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #4a90e2, #FF69B4);
+            padding: 3px;
+        }
+
+        .story-avatar img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #2d2d2d;
+        }
+
+        .story-name {
+            color: white;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .story-add {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: #4a90e2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            color: white;
+            cursor: pointer;
+            border: 3px solid #2d2d2d;
+        }
+
+        /* Story Viewer Modal */
+        .story-viewer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 2000;
+            display: none;
+            flex-direction: column;
+        }
+
+        .story-viewer.active {
+            display: flex;
+        }
+
+        .story-header {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: white;
+        }
+
+        .story-close {
+            font-size: 30px;
+            cursor: pointer;
+        }
+
+        .story-progress {
+            flex: 1;
+            height: 4px;
+            background: #444;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .story-progress-bar {
+            height: 100%;
+            background: #4a90e2;
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+
+        .story-image-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .story-image {
+            max-width: 100%;
+            max-height: 80vh;
+            border-radius: 10px;
+        }
+
+        .story-footer {
+            padding: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .story-input {
+            flex: 1;
+            padding: 12px;
+            background: #2d2d2d;
+            border: 1px solid #444;
+            border-radius: 25px;
+            color: white;
+            outline: none;
+        }
+
+        .story-reply-btn {
+            padding: 12px 25px;
+            background: #4a90e2;
+            border: none;
+            border-radius: 25px;
+            color: white;
+            cursor: pointer;
         }
 
         .messages-container {
@@ -312,10 +408,6 @@
             color: white;
         }
 
-        .edit-btn:hover {
-            opacity: 0.9;
-        }
-
         /* Typing Indicators */
         .typing-container {
             padding: 10px 20px;
@@ -408,7 +500,7 @@
             background: #357abd;
         }
 
-        #imageUpload, #voiceUpload {
+        #imageUpload, #voiceUpload, #storyUpload {
             display: none;
         }
 
@@ -437,19 +529,19 @@
     </style>
 </head>
 <body>
-    <!-- Welcome Screen -->
-    <div class="welcome-screen" id="welcomeScreen">
-        <div class="welcome-content">
-            <h1>Let's Talk</h1>
-            <p>Chat with Maria</p>
-            <p style="margin-top: 20px; font-size: 14px;">Loading...</p>
-        </div>
-    </div>
-
-    <div class="chat-container" id="chatContainer" style="display: none;">
+    <div class="chat-container">
         <div class="chat-header">
             <h1>Let's Talk</h1>
             <p>Chat with Maria</p>
+        </div>
+
+        <!-- Stories Section -->
+        <div class="stories-container" id="storiesContainer">
+            <div class="story-item" onclick="document.getElementById('storyUpload').click();">
+                <div class="story-add">+</div>
+                <span class="story-name">Add Story</span>
+            </div>
+            <!-- Stories will be added here dynamically -->
         </div>
 
         <div class="messages-container" id="messagesContainer"></div>
@@ -477,10 +569,28 @@
     <!-- Hidden file inputs -->
     <input type="file" id="imageUpload" accept="image/*">
     <input type="file" id="voiceUpload" accept="audio/*">
+    <input type="file" id="storyUpload" accept="image/*">
 
     <!-- Image preview modal -->
     <div class="modal" id="imageModal">
         <img id="modalImage" src="" alt="Preview">
+    </div>
+
+    <!-- Story Viewer -->
+    <div class="story-viewer" id="storyViewer">
+        <div class="story-header">
+            <span class="story-close" onclick="closeStory()">×</span>
+            <div class="story-progress">
+                <div class="story-progress-bar" id="storyProgress"></div>
+            </div>
+        </div>
+        <div class="story-image-container">
+            <img class="story-image" id="storyImage" src="" alt="Story">
+        </div>
+        <div class="story-footer">
+            <input type="text" class="story-input" id="storyReply" placeholder="Reply to story...">
+            <button class="story-reply-btn" onclick="replyToStory()">Send</button>
+        </div>
     </div>
 
     <!-- Message Options Menu -->
@@ -507,15 +617,6 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
     <script>
-        // Welcome screen
-        setTimeout(() => {
-            document.getElementById('welcomeScreen').classList.add('fade-out');
-            setTimeout(() => {
-                document.getElementById('welcomeScreen').style.display = 'none';
-                document.getElementById('chatContainer').style.display = 'flex';
-            }, 1000);
-        }, 5000);
-
         // Firebase configuration
         const firebaseConfig = {
             databaseURL: "https://let-s-talk-e57c6-default-rtdb.firebaseio.com/"
@@ -525,18 +626,25 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
         const messagesRef = database.ref('messages');
+        const storiesRef = database.ref('stories');
         const typingRef = database.ref('typing');
 
         // DOM elements
         const messagesContainer = document.getElementById('messagesContainer');
+        const storiesContainer = document.getElementById('storiesContainer');
         const messageInput = document.getElementById('messageInput');
         const sendBtn = document.getElementById('sendBtn');
         const imageBtn = document.getElementById('imageBtn');
         const voiceBtn = document.getElementById('voiceBtn');
         const imageUpload = document.getElementById('imageUpload');
         const voiceUpload = document.getElementById('voiceUpload');
+        const storyUpload = document.getElementById('storyUpload');
         const imageModal = document.getElementById('imageModal');
         const modalImage = document.getElementById('modalImage');
+        const storyViewer = document.getElementById('storyViewer');
+        const storyImage = document.getElementById('storyImage');
+        const storyProgress = document.getElementById('storyProgress');
+        const storyReply = document.getElementById('storyReply');
         const messageOptions = document.getElementById('messageOptions');
         const copyOption = document.getElementById('copyOption');
         const editOption = document.getElementById('editOption');
@@ -553,7 +661,8 @@
         let selectedMessageId = null;
         let selectedMessageContent = '';
         let longPressTimer;
-        let isLongPress = false;
+        let currentStory = null;
+        let storyTimer;
 
         // Typing indicators
         let typingTimeout;
@@ -595,68 +704,4 @@
         // Convert file to base64
         function fileToBase64(file) {
             return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = error => reject(error);
-            });
-        }
-
-        // Load messages
-        messagesRef.orderByChild('timestamp').on('value', (snapshot) => {
-            messagesContainer.innerHTML = '';
-            let index = 0;
-            
-            snapshot.forEach((childSnapshot) => {
-                const message = childSnapshot.val();
-                const messageId = childSnapshot.key;
-                
-                if (message.sender && message.timestamp) {
-                    const isRight = (index % 2 === 0);
-                    const sender = isRight ? 'Zee' : 'Maria';
-                    
-                    const messageDiv = document.createElement('div');
-                    messageDiv.className = `message ${isRight ? 'message-right' : 'message-left'}`;
-                    messageDiv.dataset.id = messageId;
-                    messageDiv.dataset.sender = message.sender;
-                    
-                    let content = '';
-                    
-                    if (message.text) {
-                        content = `<div class="message-bubble">${message.text.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>`;
-                    } else if (message.image) {
-                        content = `
-                            <div class="message-bubble">
-                                <div class="message-image" onclick="showImage('${message.image}')">
-                                    <img src="${message.image}" alt="Image">
-                                </div>
-                            </div>
-                        `;
-                    } else if (message.voice) {
-                        content = `
-                            <div class="message-bubble">
-                                <div class="voice-message">
-                                    <audio controls src="${message.voice}"></audio>
-                                </div>
-                            </div>
-                        `;
-                    }
-                    
-                    messageDiv.innerHTML = `
-                        <div class="message-sender">${sender}</div>
-                        ${content}
-                        <div class="message-time">${formatTimestamp(message.timestamp)}</div>
-                    `;
-                    
-                    // Add long press event
-                    messageDiv.addEventListener('mousedown', startLongPress);
-                    messageDiv.addEventListener('touchstart', startLongPress);
-                    messageDiv.addEventListener('mouseup', cancelLongPress);
-                    messageDiv.addEventListener('touchend', cancelLongPress);
-                    messageDiv.addEventListener('mouseleave', cancelLongPress);
-                    
-                    messagesContainer.appendChild(messageDiv);
-                    index++;
-                }
-            });
-           
+   
