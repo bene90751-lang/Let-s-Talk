@@ -6,16 +6,16 @@
 <title>Let's Talk</title>
 <style>
 body { font-family: Arial; background:#121212; color:#fff; display:flex; justify-content:center; align-items:center; height:100vh; margin:0; }
-#chatContainer { width:400px; height:600px; border:2px solid #333; border-radius:10px; display:flex; flex-direction:column; background:#1e1e1e; }
+#chatContainer { width:400px; max-width:95%; height:600px; border:2px solid #333; border-radius:10px; display:flex; flex-direction:column; background:#1e1e1e; }
 #chatHeader { padding:15px; text-align:center; font-size:22px; font-weight:bold; border-top-left-radius:10px; border-top-right-radius:10px; background-color:#000; display:flex; justify-content:space-between; align-items:center; }
 #messages { flex:1; padding:10px; overflow-y:auto; background:#1e1e1e; display:flex; flex-direction:column; gap:10px; }
 .message { max-width:70%; padding:10px; border-radius:10px; word-wrap:break-word; position:relative; cursor:pointer; }
 .message span { display:block; font-size:12px; margin-top:5px; color:#aaa; }
-#inputArea { display:flex; padding:10px; background:#1e1e1e; border-bottom-left-radius:10px; border-bottom-right-radius:10px; gap:5px; }
-#userInput { flex:1; padding:10px; border-radius:5px; border:none; font-size:14px; outline:none; background:#333; color:#fff; }
-#sendBtn, #imageBtn, #voiceBtn { padding:10px 12px; border:none; border-radius:5px; background-color:#000; color:#fff; cursor:pointer; font-weight:bold; }
-#sendBtn:hover, #imageBtn:hover, #voiceBtn:hover { background-color:#444; }
-#senderSelect { padding:10px; border-radius:5px; border:none; background:#333; color:#fff; }
+#inputArea { display:flex; padding:10px; background:#1e1e1e; border-bottom-left-radius:10px; border-bottom-right-radius:10px; gap:5px; flex-wrap:wrap; }
+#userInput { flex:1 1 100%; padding:10px; border-radius:5px; border:none; font-size:14px; outline:none; background:#333; color:#fff; }
+button { padding:8px 10px; border:none; border-radius:5px; background-color:#000; color:#fff; cursor:pointer; font-weight:bold; }
+button:hover { background-color:#444; }
+select { padding:8px; border-radius:5px; border:none; background:#333; color:#fff; }
 #typingIndicator { font-size:12px; color:#aaa; text-align:center; margin-bottom:5px; height:16px; }
 img.chatImage { max-width:100%; border-radius:8px; margin-top:5px; }
 audio { margin-top:5px; width:100%; }
@@ -35,9 +35,9 @@ audio { margin-top:5px; width:100%; }
   <div id="messages"></div>
   <div id="inputArea">
     <input type="text" id="userInput" placeholder="Type a message...">
+    <button id="sendBtn">Send</button>
     <button id="imageBtn">📷</button>
     <button id="voiceBtn">🎤</button>
-    <button id="sendBtn">Send</button>
   </div>
 </div>
 
@@ -47,6 +47,7 @@ audio { margin-top:5px; width:100%; }
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
 
 <script>
+// Initialize Firebase
 const firebaseConfig = {
   databaseURL: "https://let-s-talk-e57c6-default-rtdb.firebaseio.com/"
 };
@@ -54,7 +55,7 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const storage = firebase.storage();
 
-// DOM Elements
+// DOM elements
 const messagesDiv = document.getElementById('messages');
 const inputField = document.getElementById('userInput');
 const sendBtn = document.getElementById('sendBtn');
@@ -71,8 +72,6 @@ inputField.addEventListener('input', () => {
   clearTimeout(typingTimeout);
   typingTimeout = setTimeout(() => db.ref('typing/' + sender).set(false), 1000);
 });
-
-// Listen typing
 db.ref('typing').on('value', snap => {
   const typing = snap.val() || {};
   if (typing['Zee'] && senderSelect.value !== 'Zee') typingIndicator.textContent = 'Zee is typing...';
@@ -80,7 +79,7 @@ db.ref('typing').on('value', snap => {
   else typingIndicator.textContent = '';
 });
 
-// Add message
+// Add message to UI
 function addMessage(id, sender, data) {
   const msgDiv = document.createElement('div');
   msgDiv.className = 'message';
@@ -92,12 +91,10 @@ function addMessage(id, sender, data) {
   const time = new Date(data.timestamp).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
   const date = new Date(data.timestamp).toLocaleDateString();
 
-  // Determine content type
   let content = '';
   if (data.text) content += `<strong>${sender}:</strong> ${data.text}`;
   if (data.image) content += `<img class="chatImage" src="${data.image}">`;
   if (data.voice) content += `<audio controls src="${data.voice}"></audio>`;
-
   content += `<span>${date} ${time}</span>`;
   msgDiv.innerHTML = content;
   messagesDiv.appendChild(msgDiv);
@@ -108,6 +105,8 @@ function addMessage(id, sender, data) {
   msgDiv.addEventListener('mousedown', () => { pressTimer = setTimeout(() => editMessage(id, data), 600); });
   msgDiv.addEventListener('mouseup', () => clearTimeout(pressTimer));
   msgDiv.addEventListener('mouseleave', () => clearTimeout(pressTimer));
+  msgDiv.addEventListener('touchstart', () => { pressTimer = setTimeout(() => editMessage(id, data), 600); });
+  msgDiv.addEventListener('touchend', () => clearTimeout(pressTimer));
 }
 
 // Send text message
@@ -157,26 +156,21 @@ voiceBtn.addEventListener('click', async () => {
     }));
   };
   mediaRecorder.start();
-  setTimeout(() => mediaRecorder.stop(), 5000); // record 5s
+  setTimeout(() => mediaRecorder.stop(), 5000); // 5s recording
 });
 
 // Edit message
 function editMessage(id, data) {
   const newText = prompt("Edit your message:", data.text || "");
-  if (newText === null) return; // cancel
+  if (newText === null) return;
   db.ref('messages/' + id).update({ text: newText });
 }
 
-// Listen messages
+// Listen to messages
 db.ref('messages').on('child_added', snap => addMessage(snap.key, snap.val().sender, snap.val()));
 db.ref('messages').on('child_changed', snap => {
-  // update message
   const msgDivs = document.querySelectorAll('.message');
-  msgDivs.forEach(div => {
-    if (div.dataset.id === snap.key) {
-      div.querySelector('strong').nextSibling.textContent = ' ' + (snap.val().text || '');
-    }
-  });
+  msgDivs.forEach(div => { if (div.dataset.id === snap.key) div.querySelector('strong').nextSibling.textContent = ' ' + (snap.val().text || ''); });
 });
 db.ref('messages').on('child_removed', snap => {
   const msgDivs = document.querySelectorAll('.message');
@@ -184,4 +178,4 @@ db.ref('messages').on('child_removed', snap => {
 });
 </script>
 </body>
-  </html>
+</html>
