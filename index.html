@@ -5,32 +5,126 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Let's Talk</title>
 <style>
-body { font-family: Arial; background:#121212; color:#fff; margin:0; display:flex; justify-content:center; align-items:center; height:100vh; }
-#welcomeScreen, #chatContainer { width:400px; max-width:95%; border:2px solid #333; border-radius:10px; background:#1e1e1e; display:flex; flex-direction:column; justify-content:center; align-items:center; }
-#welcomeScreen { padding:20px; font-size:18px; text-align:center; }
-#chatContainer { display:none; height:600px; }
-#chatHeader { padding:15px; font-size:22px; font-weight:bold; background:#000; border-top-left-radius:10px; border-top-right-radius:10px; display:flex; justify-content:space-between; align-items:center; }
-#messages { flex:1; padding:10px; overflow-y:auto; display:flex; flex-direction:column; gap:10px; background:#1e1e1e; width:100%; }
-.message { max-width:70%; padding:10px; border-radius:10px; word-wrap:break-word; position:relative; cursor:pointer; }
-.message span { display:block; font-size:12px; margin-top:5px; color:#aaa; }
-#inputArea { display:flex; padding:10px; gap:5px; background:#1e1e1e; flex-wrap:wrap; border-bottom-left-radius:10px; border-bottom-right-radius:10px; width:100%; }
-#userInput { flex:1 1 100%; padding:10px; border-radius:5px; border:none; outline:none; background:#333; color:#fff; }
-button { padding:10px; border:none; border-radius:5px; background:#000; color:#fff; cursor:pointer; font-weight:bold; margin-top:5px; }
+body {
+  font-family: Arial;
+  background:#121212;
+  color:#fff;
+  margin:0;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+}
+#welcomeContainer, #chatContainer {
+  width:400px;
+  max-width:95%;
+  border:2px solid #333;
+  border-radius:10px;
+  background:#1e1e1e;
+  display:flex;
+  flex-direction:column;
+}
+#welcomeContainer {
+  padding:20px;
+  justify-content:center;
+  align-items:center;
+  text-align:center;
+}
+#chatContainer {
+  display:none;
+  height:600px;
+}
+#chatHeader {
+  padding:15px;
+  font-size:22px;
+  font-weight:bold;
+  background:#000;
+  border-top-left-radius:10px;
+  border-top-right-radius:10px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+#messages {
+  flex:1;
+  padding:10px;
+  overflow-y:auto;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  background:#1e1e1e;
+}
+.message {
+  max-width:70%;
+  padding:10px;
+  border-radius:10px;
+  word-wrap:break-word;
+  position:relative;
+  cursor:pointer;
+}
+.message span {
+  display:block;
+  font-size:12px;
+  margin-top:5px;
+  color:#aaa;
+}
+#inputArea {
+  display:flex;
+  padding:10px;
+  gap:5px;
+  background:#1e1e1e;
+  flex-wrap:wrap;
+  border-bottom-left-radius:10px;
+  border-bottom-right-radius:10px;
+}
+#userInput {
+  flex:1 1 100%;
+  padding:10px;
+  border-radius:5px;
+  border:none;
+  outline:none;
+  background:#333;
+  color:#fff;
+}
+img.chatImage {
+  max-width:100%;
+  border-radius:8px;
+  margin-top:5px;
+}
+audio {
+  margin-top:5px;
+  width:100%;
+}
+#typingIndicator {
+  font-size:12px;
+  color:#aaa;
+  text-align:center;
+  margin-bottom:5px;
+  height:16px;
+}
+button {
+  padding:10px;
+  border:none;
+  border-radius:5px;
+  background:#000;
+  color:#fff;
+  cursor:pointer;
+  font-weight:bold;
+}
 button:hover { background:#444; }
-img.chatImage { max-width:100%; border-radius:8px; margin-top:5px; }
-audio { margin-top:5px; width:100%; }
-#typingIndicator { font-size:12px; color:#aaa; text-align:center; margin-bottom:5px; height:16px; }
 </style>
 </head>
 <body>
 
-<div id="welcomeScreen">
-  <h2>Welcome to Let's Talk</h2>
-  <p>The simplest chat app for you and your friend.<br>Send messages, images, voice notes, and edit your messages anytime.</p>
+<div id="welcomeContainer">
+  <h1>Welcome to Let's Talk</h1>
+  <p>Chat with your friend, send images, voice messages, and edit messages by long pressing them.</p>
 </div>
 
 <div id="chatContainer">
-  <div id="chatHeader"><span>Let's Talk</span></div>
+  <div id="chatHeader">
+    <span>Let's Talk</span>
+  </div>
   <div id="typingIndicator"></div>
   <div id="messages"></div>
   <div id="inputArea">
@@ -49,69 +143,69 @@ audio { margin-top:5px; width:100%; }
 <script>
 // Firebase config
 const firebaseConfig = {
-  apiKey: "AIzaSyBMKrFDt5uvRDjTDDeaRKQQHXNrwc0SAEo",
-  authDomain: "let-s-talk-e57c6.firebaseapp.com",
-  databaseURL: "https://let-s-talk-e57c6-default-rtdb.firebaseio.com/",
-  projectId: "let-s-talk-e57c6",
-  storageBucket: "let-s-talk-e57c6.appspot.com",
-  messagingSenderId: "958080107908",
-  appId: "1:958080107908:web:d9b11b958af59bb315c9d1"
+  databaseURL: "https://let-s-talk-e57c6-default-rtdb.firebaseio.com/"
 };
-
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const storage = firebase.storage();
 
-// DOM
-const welcomeScreen = document.getElementById('welcomeScreen');
+// DOM elements
+const welcomeContainer = document.getElementById('welcomeContainer');
 const chatContainer = document.getElementById('chatContainer');
 const messagesDiv = document.getElementById('messages');
 const inputField = document.getElementById('userInput');
 const sendBtn = document.getElementById('sendBtn');
 const imageBtn = document.getElementById('imageBtn');
 const voiceBtn = document.getElementById('voiceBtn');
+const typingIndicator = document.getElementById('typingIndicator');
 
-// User names
-const users = ['Zee','Maria'];
-let currentUser = users[Math.floor(Math.random()*2)];
-let otherUser = users.find(u=>u!==currentUser);
+const currentUser = "Zee"; // You can switch to "Maria" manually or dynamically
 
-// Show chat after 3 seconds
+// Welcome screen timeout
 setTimeout(()=>{
-  welcomeScreen.style.display='none';
+  welcomeContainer.style.display='none';
   chatContainer.style.display='flex';
-},3000);
+}, 3000);
 
-// Add message
-function addMessage(id,msg){
-  const msgDiv = document.createElement('div');
-  msgDiv.className = 'message';
-  msgDiv.dataset.id = id;
-  if(msg.sender===currentUser){ msgDiv.style.background='#0077ff'; msgDiv.style.alignSelf='flex-end'; }
-  else { msgDiv.style.background='#00bb44'; msgDiv.style.alignSelf='flex-start'; }
-  const time = new Date(msg.timestamp).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
-  const date = new Date(msg.timestamp).toLocaleDateString();
-  let content = '';
-  if(msg.text) content += `<strong>${msg.sender}:</strong> ${msg.text}`;
-  if(msg.image) content += `<img class="chatImage" src="${msg.image}">`;
-  if(msg.voice) content += `<audio controls src="${msg.voice}"></audio>`;
-  content += `<span>${date} ${time}</span>`;
-  msgDiv.innerHTML = content;
+// Typing indicator
+let typingTimeout;
+inputField.addEventListener('input', () => {
+  db.ref('typing/'+currentUser).set(true);
+  clearTimeout(typingTimeout);
+  typingTimeout = setTimeout(()=>db.ref('typing/'+currentUser).set(false), 1000);
+});
+db.ref('typing').on('value', snap=>{
+  const typing = snap.val()||{};
+  if(typing['Zee'] && currentUser!=='Zee') typingIndicator.textContent='Zee is typing...';
+  else if(typing['Maria'] && currentUser!=='Maria') typingIndicator.textContent='Maria is typing...';
+  else typingIndicator.textContent='';
+});
+
+// Chat functions
+function addMessage(id, sender, data){
+  const msgDiv=document.createElement('div');
+  msgDiv.className='message';
+  msgDiv.dataset.id=id;
+  msgDiv.style.background=(sender==='Zee')?'#0077ff':'#00bb44';
+  msgDiv.style.alignSelf=(sender==='Zee')?'flex-end':'flex-start';
+  const time = new Date(data.timestamp).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+  const date = new Date(data.timestamp).toLocaleDateString();
+  let content='';
+  if(data.text) content+=`<strong>${sender}:</strong> ${data.text}`;
+  if(data.image) content+=`<img class="chatImage" src="${data.image}">`;
+  if(data.voice) content+=`<audio controls src="${data.voice}"></audio>`;
+  content+=`<span>${date} ${time}</span>`;
+  msgDiv.innerHTML=content;
   messagesDiv.appendChild(msgDiv);
-  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  messagesDiv.scrollTop=messagesDiv.scrollHeight;
 
-  // Edit on long press
+  // Edit message on long press
   let pressTimer;
-  msgDiv.addEventListener('mousedown', ()=>{ pressTimer = setTimeout(()=>editMessage(id,msg),600); });
+  msgDiv.addEventListener('mousedown', ()=>{ pressTimer=setTimeout(()=>editMessage(id,data),600); });
   msgDiv.addEventListener('mouseup', ()=>clearTimeout(pressTimer));
   msgDiv.addEventListener('mouseleave', ()=>clearTimeout(pressTimer));
-}
-
-// Edit message
-function editMessage(id,data){
-  const newText = prompt("Edit message:",data.text||"");
-  if(newText===null) return;
-  db.ref('messages/'+id).update({text:newText});
+  msgDiv.addEventListener('touchstart', ()=>{ pressTimer=setTimeout(()=>editMessage(id,data),600); });
+  msgDiv.addEventListener('touchend', ()=>clearTimeout(pressTimer));
 }
 
 // Send text
@@ -119,56 +213,70 @@ function sendMessage(){
   const text = inputField.value.trim();
   if(!text) return;
   const timestamp = Date.now();
-  db.ref('messages').push({sender: currentUser, text, timestamp});
+  db.ref('messages').push({sender:currentUser, text, timestamp});
   inputField.value='';
 }
-sendBtn.addEventListener('click',sendMessage);
-inputField.addEventListener('keypress',e=>{if(e.key==='Enter') sendMessage();});
+sendBtn.addEventListener('click', sendMessage);
+inputField.addEventListener('keypress', e=>{ if(e.key==='Enter') sendMessage(); });
 
 // Send image
-imageBtn.addEventListener('click',()=>{
+imageBtn.addEventListener('click', ()=>{
   const fileInput=document.createElement('input');
   fileInput.type='file'; fileInput.accept='image/*';
   fileInput.onchange=e=>{
-    const file=e.target.files[0]; if(!file) return;
+    const file=e.target.files[0];
+    if(!file) return;
     const timestamp=Date.now();
     const storageRef=storage.ref('images/'+timestamp+'_'+file.name);
-    storageRef.put(file).then(()=>storageRef.getDownloadURL().then(url=>{
-      db.ref('messages').push({sender:currentUser,image:url,timestamp});
-    }));
+    storageRef.put(file)
+      .then(snap=>snap.ref.getDownloadURL())
+      .then(url=>db.ref('messages').push({sender:currentUser, image:url, timestamp}))
+      .catch(err=>alert("Image upload failed: "+err.message));
   };
   fileInput.click();
 });
 
 // Send voice
-voiceBtn.addEventListener('click',async()=>{
+voiceBtn.addEventListener('click', async ()=>{
   if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ alert("Audio not supported"); return;}
-  const stream = await navigator.mediaDevices.getUserMedia({audio:true});
-  const mediaRecorder = new MediaRecorder(stream);
-  const chunks=[];
-  mediaRecorder.ondataavailable=e=>chunks.push(e.data);
-  mediaRecorder.onstop=async()=>{
-    const blob = new Blob(chunks,{type:'audio/webm'});
-    const timestamp=Date.now();
-    const storageRef=storage.ref('voice/'+timestamp+'.webm');
-    storageRef.put(blob).then(()=>storageRef.getDownloadURL().then(url=>{
-      db.ref('messages').push({sender:currentUser,voice:url,timestamp});
-    }));
-  };
-  mediaRecorder.start();
-  setTimeout(()=>mediaRecorder.stop(),5000);
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+    const mediaRecorder = new MediaRecorder(stream);
+    const chunks=[];
+    mediaRecorder.ondataavailable=e=>chunks.push(e.data);
+    mediaRecorder.onstop=async()=>{
+      const blob = new Blob(chunks,{type:'audio/webm'});
+      const timestamp=Date.now();
+      const storageRef=storage.ref('voice/'+timestamp+'.webm');
+      storageRef.put(blob)
+        .then(()=>storageRef.getDownloadURL())
+        .then(url=>db.ref('messages').push({sender:currentUser, voice:url, timestamp}))
+        .catch(err=>alert("Voice upload failed: "+err.message));
+    };
+    mediaRecorder.start();
+    alert("Recording for 5 seconds...");
+    setTimeout(()=>mediaRecorder.stop(),5000);
+  }catch(err){ alert("Cannot access microphone: "+err.message);}
 });
 
+// Edit message
+function editMessage(id,data){
+  const newText = prompt("Edit message:", data.text||"");
+  if(newText===null) return;
+  db.ref('messages/'+id).update({text:newText});
+}
+
 // Listen messages
-db.ref('messages').on('child_added',snap=>addMessage(snap.key,snap.val()));
-db.ref('messages').on('child_changed',snap=>{
+db.ref('messages').on('child_added', snap=>addMessage(snap.key, snap.val().sender, snap.val()));
+db.ref('messages').on('child_changed', snap=>{
   const msgDivs=document.querySelectorAll('.message');
-  msgDivs.forEach(div=>{ if(div.dataset.id===snap.key) div.querySelector('strong').nextSibling.textContent=' '+(snap.val().text||''); });
+  msgDivs.forEach(div=>{if(div.dataset.id===snap.key) div.querySelector('strong').nextSibling.textContent=' '+(snap.val().text||'');});
 });
-db.ref('messages').on('child_removed',snap=>{
+db.ref('messages').on('child_removed', snap=>{
   const msgDivs=document.querySelectorAll('.message');
-  msgDivs.forEach(div=>{ if(div.dataset.id===snap.key) div.remove(); });
+  msgDivs.forEach(div=>{if(div.dataset.id===snap.key) div.remove();});
 });
 </script>
+
 </body>
-  </html>
+      </html>
