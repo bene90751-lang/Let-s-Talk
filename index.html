@@ -1,1 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Let's Talk</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #121212;
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+  }
 
+  #chatContainer {
+    width: 400px;
+    height: 600px;
+    border: 2px solid #333;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    background: #1e1e1e;
+  }
+
+  #chatHeader {
+    padding: 15px;
+    text-align: center;
+    font-size: 22px;
+    font-weight: bold;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    background-color: #000;
+  }
+
+  #messages {
+    flex: 1;
+    padding: 10px;
+    overflow-y: auto;
+    background: #1e1e1e;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .message {
+    max-width: 70%;
+    padding: 10px;
+    border-radius: 10px;
+    word-wrap: break-word;
+    position: relative;
+  }
+
+  .message span {
+    display: block;
+    font-size: 12px;
+    margin-top: 5px;
+    color: #aaa;
+  }
+
+  #inputArea {
+    display: flex;
+    padding: 10px;
+    background: #1e1e1e;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+  }
+
+  #userInput {
+    flex: 1;
+    padding: 10px;
+    border-radius: 5px;
+    border: none;
+    font-size: 14px;
+    outline: none;
+    background: #333;
+    color: #fff;
+  }
+
+  #sendBtn {
+    margin-left: 5px;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    background-color: #000;
+    color: #fff;
+    cursor: pointer;
+    font-weight: bold;
+  }
+
+  #sendBtn:hover {
+    background-color: #444;
+  }
+</style>
+</head>
+<body>
+
+<div id="chatContainer">
+  <div id="chatHeader">Let's Talk</div>
+  <div id="messages"></div>
+  <div id="inputArea">
+    <input type="text" id="userInput" placeholder="Type a message...">
+    <button id="sendBtn">Send</button>
+  </div>
+</div>
+
+<script>
+  const messagesDiv = document.getElementById('messages');
+  const inputField = document.getElementById('userInput');
+  const sendBtn = document.getElementById('sendBtn');
+
+  let lastSender = 'Maria'; // Start alternating
+
+  function addMessage(sender, text) {
+    const msgDiv = document.createElement('div');
+    msgDiv.className = 'message';
+
+    // Alternate bubble colors
+    if (sender === 'Zee') {
+      msgDiv.style.background = '#0077ff';
+      msgDiv.style.alignSelf = 'flex-end';
+    } else {
+      msgDiv.style.background = '#00bb44';
+      msgDiv.style.alignSelf = 'flex-start';
+    }
+
+    // Add message text + sender + timestamp
+    const now = new Date();
+    const time = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    const date = now.toLocaleDateString();
+    msgDiv.innerHTML = `<strong>${sender}:</strong> ${text} <span>${date} ${time}</span>`;
+
+    messagesDiv.appendChild(msgDiv);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight; // scroll to bottom
+  }
+
+  function sendMessage() {
+    const text = inputField.value.trim();
+    if (!text) return;
+
+    // Determine sender (alternate between Maria and Zee)
+    let sender = lastSender === 'Maria' ? 'Zee' : 'Maria';
+    lastSender = sender;
+
+    addMessage(sender, text);
+    inputField.value = '';
+    inputField.focus();
+  }
+
+  sendBtn.addEventListener('click', sendMessage);
+  inputField.addEventListener('keypress', e => { if(e.key === 'Enter') sendMessage(); });
+</script>
+
+</body>
+  </html>
