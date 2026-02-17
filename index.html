@@ -1,65 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Let's Talk</title>
-<style>
-body {
-  font-family: Arial; background:#121212; color:#fff; margin:0; display:flex; justify-content:center; align-items:center; height:100vh;
-}
-#authContainer, #chatContainer {
-  width:400px; max-width:95%; border:2px solid #333; border-radius:10px; background:#1e1e1e; display:flex; flex-direction:column;
-}
-#authContainer { padding:20px; }
-input { padding:10px; margin:5px 0; border-radius:5px; border:none; width:100%; background:#333; color:#fff; }
-button { padding:10px; border:none; border-radius:5px; background:#000; color:#fff; cursor:pointer; font-weight:bold; margin-top:5px; }
-button:hover { background:#444; }
-#chatContainer { display:none; height:600px; }
-#chatHeader { padding:15px; font-size:22px; font-weight:bold; background:#000; border-top-left-radius:10px; border-top-right-radius:10px; display:flex; justify-content:space-between; align-items:center; }
-#messages { flex:1; padding:10px; overflow-y:auto; display:flex; flex-direction:column; gap:10px; background:#1e1e1e; }
-.message { max-width:70%; padding:10px; border-radius:10px; word-wrap:break-word; position:relative; cursor:pointer; }
-.message span { display:block; font-size:12px; margin-top:5px; color:#aaa; }
-#inputArea { display:flex; padding:10px; gap:5px; background:#1e1e1e; flex-wrap:wrap; border-bottom-left-radius:10px; border-bottom-right-radius:10px; }
-#userInput { flex:1 1 100%; padding:10px; border-radius:5px; border:none; outline:none; background:#333; color:#fff; }
-img.chatImage { max-width:100%; border-radius:8px; margin-top:5px; }
-audio { margin-top:5px; width:100%; }
-#typingIndicator { font-size:12px; color:#aaa; text-align:center; margin-bottom:5px; height:16px; }
-</style>
-</head>
-<body>
-
-<div id="authContainer">
-  <h2>Let's Talk</h2>
-  <input type="email" id="email" placeholder="Email">
-  <input type="password" id="password" placeholder="Password">
-  <button id="loginBtn">Login</button>
-  <button id="signupBtn" style="display:none;">Sign Up</button>
-  <p id="authSwitch" style="text-align:center; cursor:pointer; color:#aaa; margin-top:10px;">Don't have an account? Sign Up</p>
-  <p id="authMessage" style="color:#f55; text-align:center;"></p>
-</div>
-
-<div id="chatContainer">
-  <div id="chatHeader">
-    <span>Let's Talk</span>
-  </div>
-  <div id="typingIndicator"></div>
-  <div id="messages"></div>
-  <div id="inputArea">
-    <input type="text" id="userInput" placeholder="Type a message...">
-    <button id="sendBtn">Send</button>
-    <button id="imageBtn">📷</button>
-    <button id="voiceBtn">🎤</button>
-    <button id="logoutBtn">Logout</button>
-  </div>
-</div>
-
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
-
 <script>
 // Firebase config
 const firebaseConfig = {
@@ -71,171 +9,75 @@ const firebaseConfig = {
   messagingSenderId: "958080107908",
   appId: "1:958080107908:web:d9b11b958af59bb315c9d1"
 };
-firebase.initializeApp(firebaseConfig);
 
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.database();
 const storage = firebase.storage();
-
-// DOM elements
-const authContainer = document.getElementById('authContainer');
-const chatContainer = document.getElementById('chatContainer');
-const emailField = document.getElementById('email');
-const passwordField = document.getElementById('password');
-const loginBtn = document.getElementById('loginBtn');
-const signupBtn = document.getElementById('signupBtn');
-const authSwitch = document.getElementById('authSwitch');
-const authMessage = document.getElementById('authMessage');
-
-const messagesDiv = document.getElementById('messages');
-const inputField = document.getElementById('userInput');
-const sendBtn = document.getElementById('sendBtn');
-const typingIndicator = document.getElementById('typingIndicator');
-const imageBtn = document.getElementById('imageBtn');
-const voiceBtn = document.getElementById('voiceBtn');
-const logoutBtn = document.getElementById('logoutBtn');
-
-let isLoginMode = true;
-
-// Switch login/signup
-authSwitch.addEventListener('click', () => {
-  isLoginMode = !isLoginMode;
-  authSwitch.textContent = isLoginMode ? "Don't have an account? Sign Up" : "Already have an account? Login";
-  loginBtn.style.display = isLoginMode ? "inline-block" : "none";
-  signupBtn.style.display = isLoginMode ? "none" : "inline-block";
-  authMessage.textContent = '';
-});
 
 // Login
 loginBtn.addEventListener('click', () => {
   const email = emailField.value.trim();
   const password = passwordField.value.trim();
-  if(!email || !password) return authMessage.textContent = 'Enter email & password';
+  if(!email || !password) { authMessage.textContent = 'Enter email & password'; return; }
+
   auth.signInWithEmailAndPassword(email, password)
-      .catch(err => authMessage.textContent = err.message);
+    .then(userCredential => {
+      // Successfully logged in
+      console.log("Login success:", userCredential.user.email);
+    })
+    .catch(err => authMessage.textContent = err.message);
 });
 
-// Sign Up
+// Signup
 signupBtn.addEventListener('click', () => {
   const email = emailField.value.trim();
   const password = passwordField.value.trim();
-  if(!email || !password) return authMessage.textContent = 'Enter email & password';
+  if(!email || !password) { authMessage.textContent = 'Enter email & password'; return; }
+
   auth.createUserWithEmailAndPassword(email, password)
-      .catch(err => authMessage.textContent = err.message);
+    .then(userCredential => {
+      console.log("Signup success:", userCredential.user.email);
+    })
+    .catch(err => authMessage.textContent = err.message);
 });
 
-// Auth state listener
+// Auth listener
 auth.onAuthStateChanged(user => {
   if(user){
+    // Show chat
     authContainer.style.display = 'none';
     chatContainer.style.display = 'flex';
-    listenMessages();
+    listenMessages(user.uid); // Pass UID to listen messages
   } else {
     authContainer.style.display = 'flex';
     chatContainer.style.display = 'none';
   }
 });
 
-// Logout
-logoutBtn.addEventListener('click', () => auth.signOut());
-
-// Private chat room: use UID to separate chats
-function getChatRef() {
-  const uid = auth.currentUser.uid;
-  const otherUID = (uid === 'ZeeUID') ? 'MariaUID' : 'ZeeUID'; // replace with your real UIDs if needed
-  return db.ref('chats/' + [uid, otherUID].sort().join('_'));
+// Get chat reference for 2 users
+function getChatRef(uid){
+  const otherUID = 'Maria_or_Zee'; // replace manually for now or fetch
+  return db.ref('chats/'+ [uid, otherUID].sort().join('_'));
 }
 
-// Add message
-function addMessage(id, data){
-  const msgDiv = document.createElement('div');
-  msgDiv.className = 'message';
-  msgDiv.dataset.id = id;
-  msgDiv.style.background = (data.sender === auth.currentUser.email) ? '#0077ff' : '#00bb44';
-  msgDiv.style.alignSelf = (data.sender === auth.currentUser.email) ? 'flex-end' : 'flex-start';
-  let content = '';
-  if(data.text) content += `<strong>${data.sender}:</strong> ${data.text}`;
-  if(data.image) content += `<img class="chatImage" src="${data.image}">`;
-  if(data.voice) content += `<audio controls src="${data.voice}"></audio>`;
-  const time = new Date(data.timestamp).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
-  const date = new Date(data.timestamp).toLocaleDateString();
-  content += `<span>${date} ${time}</span>`;
-  msgDiv.innerHTML = content;
-  messagesDiv.appendChild(msgDiv);
-  messagesDiv.scrollTop = messagesDiv.scrollHeight;
-
-  // Edit message
-  let pressTimer;
-  msgDiv.addEventListener('mousedown', ()=>{ pressTimer = setTimeout(()=>editMessage(id,data),600); });
-  msgDiv.addEventListener('mouseup', ()=>clearTimeout(pressTimer));
-  msgDiv.addEventListener('mouseleave', ()=>clearTimeout(pressTimer));
-  msgDiv.addEventListener('touchstart', ()=>{ pressTimer = setTimeout(()=>editMessage(id,data),600); });
-  msgDiv.addEventListener('touchend', ()=>clearTimeout(pressTimer));
-}
-
-// Send text
-function sendMessage(){
+// Send a message
+sendBtn.addEventListener('click', () => {
   const text = inputField.value.trim();
   if(!text) return;
-  const chatRef = getChatRef();
-  chatRef.push({sender: auth.currentUser.email, text, timestamp: Date.now()});
+  const user = auth.currentUser;
+  const chatRef = getChatRef(user.uid);
+  chatRef.push({ sender: user.email, text, timestamp: Date.now() });
   inputField.value='';
-}
-sendBtn.addEventListener('click', sendMessage);
-inputField.addEventListener('keypress', e=>{ if(e.key==='Enter') sendMessage(); });
-
-// Send image
-imageBtn.addEventListener('click', ()=>{
-  const fileInput = document.createElement('input');
-  fileInput.type='file'; fileInput.accept='image/*';
-  fileInput.onchange = e => {
-    const file = e.target.files[0]; if(!file) return;
-    const chatRef = getChatRef();
-    const storageRef = storage.ref('images/'+Date.now()+'_'+file.name);
-    storageRef.put(file).then(()=> storageRef.getDownloadURL().then(url=>{
-      chatRef.push({sender: auth.currentUser.email, image:url, timestamp: Date.now()});
-    }));
-  };
-  fileInput.click();
 });
-
-// Send voice (5s recording)
-voiceBtn.addEventListener('click', async ()=>{
-  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ alert("Audio not supported"); return;}
-  const stream = await navigator.mediaDevices.getUserMedia({audio:true});
-  const recorder = new MediaRecorder(stream);
-  const chunks=[];
-  recorder.ondataavailable=e=>chunks.push(e.data);
-  recorder.onstop=async()=>{
-    const blob = new Blob(chunks,{type:'audio/webm'});
-    const storageRef = storage.ref('voice/'+Date.now()+'.webm');
-    storageRef.put(blob).then(()=>storageRef.getDownloadURL().then(url=>{
-      const chatRef = getChatRef();
-      chatRef.push({sender: auth.currentUser.email, voice:url, timestamp: Date.now()});
-    }));
-  };
-  recorder.start();
-  setTimeout(()=>recorder.stop(),5000);
-});
-
-// Edit message
-function editMessage(id,data){
-  const newText = prompt("Edit message:",data.text||"");
-  if(newText===null) return;
-  const chatRef = getChatRef();
-  chatRef.child(id).update({text:newText});
-}
 
 // Listen messages
-function listenMessages(){
-  const chatRef = getChatRef();
-  chatRef.on('child_added', snap=>addMessage(snap.key,snap.val()));
-  chatRef.on('child_changed', snap=>{
-    const divs = document.querySelectorAll('.message');
-    divs.forEach(d=>{ if(d.dataset.id===snap.key) d.querySelector('strong').nextSibling.textContent=' '+(snap.val().text||''); });
+function listenMessages(uid){
+  const chatRef = getChatRef(uid);
+  chatRef.on('child_added', snap => {
+    const msg = snap.val();
+    addMessage(snap.key, msg);
   });
 }
-</script>
-
-</body>
-  </html>
+                       </script>
