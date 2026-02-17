@@ -13,20 +13,61 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #000000;
             height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
         }
 
+        /* Welcome Screen */
+        .welcome-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            transition: opacity 1s ease;
+        }
+
+        .welcome-screen.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .welcome-content {
+            text-align: center;
+            color: white;
+            animation: pulse 2s infinite;
+        }
+
+        .welcome-content h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            letter-spacing: 4px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .welcome-content p {
+            font-size: 18px;
+            opacity: 0.9;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
         .chat-container {
-            width: 90%;
-            max-width: 500px;
-            height: 90vh;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 100%;
+            height: 100vh;
+            background: #1a1a1a;
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -54,7 +95,7 @@
             flex: 1;
             overflow-y: auto;
             padding: 20px;
-            background: #fafafa;
+            background: #1a1a1a;
             display: flex;
             flex-direction: column;
             gap: 15px;
@@ -66,6 +107,9 @@
             flex-direction: column;
             position: relative;
             animation: fadeIn 0.3s ease-in;
+            cursor: pointer;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
         @keyframes fadeIn {
@@ -86,7 +130,8 @@
             border-radius: 20px;
             word-wrap: break-word;
             position: relative;
-            color: black;
+            color: white;
+            transition: all 0.2s;
         }
 
         .message-right .message-bubble {
@@ -102,7 +147,7 @@
         .message-sender {
             font-size: 12px;
             margin-bottom: 4px;
-            color: black;
+            color: #ffffff;
             font-weight: 600;
         }
 
@@ -112,7 +157,7 @@
 
         .message-time {
             font-size: 11px;
-            color: black;
+            color: #cccccc;
             margin-top: 4px;
             opacity: 0.8;
             font-weight: 500;
@@ -150,10 +195,179 @@
             height: 40px;
         }
 
+        /* Message Options Menu */
+        .message-options {
+            position: fixed;
+            background: #2d2d2d;
+            border-radius: 10px;
+            padding: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            min-width: 150px;
+        }
+
+        .message-options.show {
+            display: flex;
+        }
+
+        .message-option {
+            padding: 12px 15px;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .message-option:hover {
+            background: #4a4a4a;
+        }
+
+        .message-option.delete {
+            color: #ff6b6b;
+        }
+
+        .message-option.copy {
+            color: #4a90e2;
+        }
+
+        .message-option.edit {
+            color: #4CAF50;
+        }
+
+        /* Edit Modal */
+        .edit-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .edit-modal.show {
+            display: flex;
+        }
+
+        .edit-content {
+            background: #2d2d2d;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+        }
+
+        .edit-content h3 {
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .edit-input {
+            width: 100%;
+            padding: 15px;
+            background: #3d3d3d;
+            border: 1px solid #4a4a4a;
+            border-radius: 10px;
+            color: white;
+            font-size: 16px;
+            margin-bottom: 20px;
+            resize: none;
+        }
+
+        .edit-input:focus {
+            outline: none;
+            border-color: #4a90e2;
+        }
+
+        .edit-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .edit-btn {
+            padding: 10px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        .edit-btn.save {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .edit-btn.cancel {
+            background: #dc3545;
+            color: white;
+        }
+
+        .edit-btn:hover {
+            opacity: 0.9;
+        }
+
+        /* Typing Indicators */
+        .typing-container {
+            padding: 10px 20px;
+            display: flex;
+            gap: 15px;
+            background: #1a1a1a;
+            border-top: 1px solid #333;
+        }
+
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #888;
+            font-size: 13px;
+            font-style: italic;
+            background: #2d2d2d;
+            padding: 8px 15px;
+            border-radius: 20px;
+            flex: 1;
+        }
+
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            background: #888;
+            border-radius: 50%;
+            display: inline-block;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-indicator span:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+
         .input-container {
             padding: 20px;
-            background: white;
-            border-top: 1px solid #e0e0e0;
+            background: #1a1a1a;
+            border-top: 1px solid #333;
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
@@ -163,14 +377,20 @@
             flex: 1;
             min-width: 200px;
             padding: 12px;
-            border: 1px solid #e0e0e0;
+            background: #2d2d2d;
+            border: 1px solid #444;
             border-radius: 25px;
             outline: none;
             font-size: 14px;
+            color: white;
         }
 
         #messageInput:focus {
             border-color: #4a90e2;
+        }
+
+        #messageInput::placeholder {
+            color: #888;
         }
 
         .action-btn {
@@ -217,13 +437,34 @@
     </style>
 </head>
 <body>
-    <div class="chat-container">
+    <!-- Welcome Screen -->
+    <div class="welcome-screen" id="welcomeScreen">
+        <div class="welcome-content">
+            <h1>Let's Talk</h1>
+            <p>Chat with Maria</p>
+            <p style="margin-top: 20px; font-size: 14px;">Loading...</p>
+        </div>
+    </div>
+
+    <div class="chat-container" id="chatContainer" style="display: none;">
         <div class="chat-header">
             <h1>Let's Talk</h1>
             <p>Chat with Maria</p>
         </div>
 
         <div class="messages-container" id="messagesContainer"></div>
+
+        <!-- Typing Indicators -->
+        <div class="typing-container">
+            <div class="typing-indicator" id="zeeTyping" style="display: none;">
+                <span></span><span></span><span></span>
+                Zee is typing...
+            </div>
+            <div class="typing-indicator" id="mariaTyping" style="display: none;">
+                <span></span><span></span><span></span>
+                Maria is typing...
+            </div>
+        </div>
 
         <div class="input-container">
             <input type="text" id="messageInput" placeholder="Type your message...">
@@ -242,11 +483,39 @@
         <img id="modalImage" src="" alt="Preview">
     </div>
 
+    <!-- Message Options Menu -->
+    <div class="message-options" id="messageOptions">
+        <div class="message-option copy" id="copyOption">📋 Copy</div>
+        <div class="message-option edit" id="editOption">✏️ Edit</div>
+        <div class="message-option delete" id="deleteOption">🗑️ Delete</div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="edit-modal" id="editModal">
+        <div class="edit-content">
+            <h3>Edit Message</h3>
+            <textarea class="edit-input" id="editInput" rows="3"></textarea>
+            <div class="edit-buttons">
+                <button class="edit-btn cancel" id="cancelEdit">Cancel</button>
+                <button class="edit-btn save" id="saveEdit">Save</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
     <script>
+        // Welcome screen
+        setTimeout(() => {
+            document.getElementById('welcomeScreen').classList.add('fade-out');
+            setTimeout(() => {
+                document.getElementById('welcomeScreen').style.display = 'none';
+                document.getElementById('chatContainer').style.display = 'flex';
+            }, 1000);
+        }, 5000);
+
         // Firebase configuration
         const firebaseConfig = {
             databaseURL: "https://let-s-talk-e57c6-default-rtdb.firebaseio.com/"
@@ -256,6 +525,7 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
         const messagesRef = database.ref('messages');
+        const typingRef = database.ref('typing');
 
         // DOM elements
         const messagesContainer = document.getElementById('messagesContainer');
@@ -267,9 +537,44 @@
         const voiceUpload = document.getElementById('voiceUpload');
         const imageModal = document.getElementById('imageModal');
         const modalImage = document.getElementById('modalImage');
+        const messageOptions = document.getElementById('messageOptions');
+        const copyOption = document.getElementById('copyOption');
+        const editOption = document.getElementById('editOption');
+        const deleteOption = document.getElementById('deleteOption');
+        const editModal = document.getElementById('editModal');
+        const editInput = document.getElementById('editInput');
+        const cancelEdit = document.getElementById('cancelEdit');
+        const saveEdit = document.getElementById('saveEdit');
+        const zeeTyping = document.getElementById('zeeTyping');
+        const mariaTyping = document.getElementById('mariaTyping');
 
-        // Track message count for alternating
+        // State
         let messageCount = 0;
+        let selectedMessageId = null;
+        let selectedMessageContent = '';
+        let longPressTimer;
+        let isLongPress = false;
+
+        // Typing indicators
+        let typingTimeout;
+
+        messageInput.addEventListener('input', () => {
+            typingRef.child('Zee').set(true);
+            
+            clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(() => {
+                typingRef.child('Zee').set(false);
+            }, 1000);
+        });
+
+        // Listen for typing status
+        typingRef.child('Zee').on('value', (snapshot) => {
+            zeeTyping.style.display = snapshot.val() ? 'flex' : 'none';
+        });
+
+        typingRef.child('Maria').on('value', (snapshot) => {
+            mariaTyping.style.display = snapshot.val() ? 'flex' : 'none';
+        });
 
         // Format timestamp
         function formatTimestamp(timestamp) {
@@ -304,14 +609,16 @@
             
             snapshot.forEach((childSnapshot) => {
                 const message = childSnapshot.val();
+                const messageId = childSnapshot.key;
                 
                 if (message.sender && message.timestamp) {
-                    // Alternate sides: even index = right (Zee), odd index = left (Maria)
                     const isRight = (index % 2 === 0);
                     const sender = isRight ? 'Zee' : 'Maria';
                     
                     const messageDiv = document.createElement('div');
                     messageDiv.className = `message ${isRight ? 'message-right' : 'message-left'}`;
+                    messageDiv.dataset.id = messageId;
+                    messageDiv.dataset.sender = message.sender;
                     
                     let content = '';
                     
@@ -341,118 +648,15 @@
                         <div class="message-time">${formatTimestamp(message.timestamp)}</div>
                     `;
                     
+                    // Add long press event
+                    messageDiv.addEventListener('mousedown', startLongPress);
+                    messageDiv.addEventListener('touchstart', startLongPress);
+                    messageDiv.addEventListener('mouseup', cancelLongPress);
+                    messageDiv.addEventListener('touchend', cancelLongPress);
+                    messageDiv.addEventListener('mouseleave', cancelLongPress);
+                    
                     messagesContainer.appendChild(messageDiv);
                     index++;
                 }
             });
-            
-            // Update message count
-            messageCount = index;
-            
-            // Scroll to bottom
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        });
-
-        // Send message function
-        async function sendMessage(content, type = 'text') {
-            if (!content) return;
-
-            // Determine sender based on message count
-            const sender = (messageCount % 2 === 0) ? 'Zee' : 'Maria';
-            
-            const message = {
-                sender: sender,
-                timestamp: Date.now()
-            };
-
-            if (type === 'text') {
-                message.text = content;
-            } else if (type === 'image') {
-                message.image = content;
-            } else if (type === 'voice') {
-                message.voice = content;
-            }
-
-            try {
-                await messagesRef.push(message);
-                if (type === 'text') {
-                    messageInput.value = '';
-                }
-                messageCount++; // Increment for next message
-            } catch (error) {
-                console.error('Error sending message:', error);
-                alert('Failed to send message. Please try again.');
-            }
-        }
-
-        // Send text message
-        sendBtn.addEventListener('click', () => {
-            const text = messageInput.value.trim();
-            if (text) {
-                sendMessage(text, 'text');
-            }
-        });
-
-        messageInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                const text = messageInput.value.trim();
-                if (text) {
-                    sendMessage(text, 'text');
-                }
-            }
-        });
-
-        // Send image
-        imageBtn.addEventListener('click', () => {
-            imageUpload.click();
-        });
-
-        imageUpload.addEventListener('change', async (e) => {
-            const file = e.target.files[0];
-            if (file && file.type.startsWith('image/')) {
-                try {
-                    const base64Image = await fileToBase64(file);
-                    await sendMessage(base64Image, 'image');
-                } catch (error) {
-                    console.error('Error processing image:', error);
-                    alert('Failed to process image. Please try again.');
-                }
-            }
-            imageUpload.value = '';
-        });
-
-        // Send voice
-        voiceBtn.addEventListener('click', () => {
-            voiceUpload.click();
-        });
-
-        voiceUpload.addEventListener('change', async (e) => {
-            const file = e.target.files[0];
-            if (file && file.type.startsWith('audio/')) {
-                try {
-                    const base64Audio = await fileToBase64(file);
-                    await sendMessage(base64Audio, 'voice');
-                } catch (error) {
-                    console.error('Error processing voice:', error);
-                    alert('Failed to process voice message. Please try again.');
-                }
-            }
-            voiceUpload.value = '';
-        });
-
-        // Image modal
-        window.showImage = function(imageUrl) {
-            modalImage.src = imageUrl;
-            imageModal.classList.add('active');
-        };
-
-        imageModal.addEventListener('click', () => {
-            imageModal.classList.remove('active');
-            modalImage.src = '';
-        });
-
-        console.log('Let\'s Talk app is ready!');
-    </script>
-</body>
-    </html>
+           
