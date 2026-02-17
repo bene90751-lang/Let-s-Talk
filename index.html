@@ -9,14 +9,16 @@ body { font-family: Arial; background:#121212; color:#fff; display:flex; justify
 #chatContainer { width:400px; height:600px; border:2px solid #333; border-radius:10px; display:flex; flex-direction:column; background:#1e1e1e; }
 #chatHeader { padding:15px; text-align:center; font-size:22px; font-weight:bold; border-top-left-radius:10px; border-top-right-radius:10px; background-color:#000; display:flex; justify-content:space-between; align-items:center; }
 #messages { flex:1; padding:10px; overflow-y:auto; background:#1e1e1e; display:flex; flex-direction:column; gap:10px; }
-.message { max-width:70%; padding:10px; border-radius:10px; word-wrap:break-word; position:relative; }
+.message { max-width:70%; padding:10px; border-radius:10px; word-wrap:break-word; position:relative; cursor:pointer; }
 .message span { display:block; font-size:12px; margin-top:5px; color:#aaa; }
 #inputArea { display:flex; padding:10px; background:#1e1e1e; border-bottom-left-radius:10px; border-bottom-right-radius:10px; gap:5px; }
 #userInput { flex:1; padding:10px; border-radius:5px; border:none; font-size:14px; outline:none; background:#333; color:#fff; }
-#sendBtn { padding:10px 15px; border:none; border-radius:5px; background-color:#000; color:#fff; cursor:pointer; font-weight:bold; }
-#sendBtn:hover { background-color:#444; }
+#sendBtn, #imageBtn, #voiceBtn { padding:10px 12px; border:none; border-radius:5px; background-color:#000; color:#fff; cursor:pointer; font-weight:bold; }
+#sendBtn:hover, #imageBtn:hover, #voiceBtn:hover { background-color:#444; }
 #senderSelect { padding:10px; border-radius:5px; border:none; background:#333; color:#fff; }
 #typingIndicator { font-size:12px; color:#aaa; text-align:center; margin-bottom:5px; height:16px; }
+img.chatImage { max-width:100%; border-radius:8px; margin-top:5px; }
+audio { margin-top:5px; width:100%; }
 </style>
 </head>
 <body>
@@ -33,6 +35,8 @@ body { font-family: Arial; background:#121212; color:#fff; display:flex; justify
   <div id="messages"></div>
   <div id="inputArea">
     <input type="text" id="userInput" placeholder="Type a message...">
+    <button id="imageBtn">📷</button>
+    <button id="voiceBtn">🎤</button>
     <button id="sendBtn">Send</button>
   </div>
 </div>
@@ -40,99 +44,144 @@ body { font-family: Arial; background:#121212; color:#fff; display:flex; justify
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
 
 <script>
-  // 🔹 Initialize Firebase
-  const firebaseConfig = {
-    databaseURL: "https://let-s-talk-e57c6-default-rtdb.firebaseio.com/"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
+const firebaseConfig = {
+  databaseURL: "https://let-s-talk-e57c6-default-rtdb.firebaseio.com/"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const storage = firebase.storage();
 
-  const messagesDiv = document.getElementById('messages');
-  const inputField = document.getElementById('userInput');
-  const sendBtn = document.getElementById('sendBtn');
-  const senderSelect = document.getElementById('senderSelect');
-  const typingIndicator = document.getElementById('typingIndicator');
+// DOM Elements
+const messagesDiv = document.getElementById('messages');
+const inputField = document.getElementById('userInput');
+const sendBtn = document.getElementById('sendBtn');
+const senderSelect = document.getElementById('senderSelect');
+const typingIndicator = document.getElementById('typingIndicator');
+const imageBtn = document.getElementById('imageBtn');
+const voiceBtn = document.getElementById('voiceBtn');
 
-  const MESSAGE_LIMIT = 1000; // keep last 1000 messages in DB
+// Typing indicator
+let typingTimeout;
+inputField.addEventListener('input', () => {
+  const sender = senderSelect.value;
+  db.ref('typing/' + sender).set(true);
+  clearTimeout(typingTimeout);
+  typingTimeout = setTimeout(() => db.ref('typing/' + sender).set(false), 1000);
+});
 
-  // Add message to UI
-  function addMessage(sender, text, timestamp) {
-    const msgDiv = document.createElement('div');
-    msgDiv.className = 'message';
+// Listen typing
+db.ref('typing').on('value', snap => {
+  const typing = snap.val() || {};
+  if (typing['Zee'] && senderSelect.value !== 'Zee') typingIndicator.textContent = 'Zee is typing...';
+  else if (typing['Maria'] && senderSelect.value !== 'Maria') typingIndicator.textContent = 'Maria is typing...';
+  else typingIndicator.textContent = '';
+});
 
-    // Bubble colors
-    if (sender === 'Zee') {
-      msgDiv.style.background = '#0077ff';
-      msgDiv.style.alignSelf = 'flex-end';
-    } else {
-      msgDiv.style.background = '#00bb44';
-      msgDiv.style.alignSelf = 'flex-start';
-    }
+// Add message
+function addMessage(id, sender, data) {
+  const msgDiv = document.createElement('div');
+  msgDiv.className = 'message';
+  msgDiv.dataset.id = id;
 
-    const time = new Date(timestamp).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
-    const date = new Date(timestamp).toLocaleDateString();
+  if (sender === 'Zee') msgDiv.style.background = '#0077ff', msgDiv.style.alignSelf = 'flex-end';
+  else msgDiv.style.background = '#00bb44', msgDiv.style.alignSelf = 'flex-start';
 
-    msgDiv.innerHTML = `<strong>${sender}:</strong> ${text} <span>${date} ${time}</span>`;
-    messagesDiv.appendChild(msgDiv);
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
-  }
+  const time = new Date(data.timestamp).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+  const date = new Date(data.timestamp).toLocaleDateString();
 
-  // Send message
-  function sendMessage() {
-    const text = inputField.value.trim();
-    if (!text) return;
+  // Determine content type
+  let content = '';
+  if (data.text) content += `<strong>${sender}:</strong> ${data.text}`;
+  if (data.image) content += `<img class="chatImage" src="${data.image}">`;
+  if (data.voice) content += `<audio controls src="${data.voice}"></audio>`;
 
+  content += `<span>${date} ${time}</span>`;
+  msgDiv.innerHTML = content;
+  messagesDiv.appendChild(msgDiv);
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+  // Long press for edit/delete
+  let pressTimer;
+  msgDiv.addEventListener('mousedown', () => { pressTimer = setTimeout(() => editMessage(id, data), 600); });
+  msgDiv.addEventListener('mouseup', () => clearTimeout(pressTimer));
+  msgDiv.addEventListener('mouseleave', () => clearTimeout(pressTimer));
+}
+
+// Send text message
+function sendMessage() {
+  const text = inputField.value.trim();
+  if (!text) return;
+  const sender = senderSelect.value;
+  const timestamp = Date.now();
+  db.ref('messages').push({ sender, text, timestamp });
+  inputField.value = '';
+}
+sendBtn.addEventListener('click', sendMessage);
+inputField.addEventListener('keypress', e => { if(e.key==='Enter') sendMessage(); });
+
+// Send image
+imageBtn.addEventListener('click', () => {
+  const fileInput = document.createElement('input');
+  fileInput.type = 'file';
+  fileInput.accept = 'image/*';
+  fileInput.onchange = e => {
+    const file = e.target.files[0];
+    if (!file) return;
     const sender = senderSelect.value;
     const timestamp = Date.now();
+    const storageRef = storage.ref('images/' + timestamp + '_' + file.name);
+    storageRef.put(file).then(() => storageRef.getDownloadURL().then(url => {
+      db.ref('messages').push({ sender, image: url, timestamp });
+    }));
+  };
+  fileInput.click();
+});
 
-    db.ref('messages').push({ sender, text, timestamp });
-
-    inputField.value = '';
-    inputField.focus();
-  }
-
-  sendBtn.addEventListener('click', sendMessage);
-  inputField.addEventListener('keypress', e => { if(e.key==='Enter') sendMessage(); });
-
-  // Typing indicator
-  let typingTimeout;
-  inputField.addEventListener('input', () => {
+// Send voice note
+voiceBtn.addEventListener('click', async () => {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { alert("Audio not supported"); return; }
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  const mediaRecorder = new MediaRecorder(stream);
+  const chunks = [];
+  mediaRecorder.ondataavailable = e => chunks.push(e.data);
+  mediaRecorder.onstop = async () => {
+    const blob = new Blob(chunks, { type: 'audio/webm' });
     const sender = senderSelect.value;
-    db.ref('typing/' + sender).set(true);
-    clearTimeout(typingTimeout);
-    typingTimeout = setTimeout(() => {
-      db.ref('typing/' + sender).set(false);
-    }, 1000);
-  });
+    const timestamp = Date.now();
+    const storageRef = storage.ref('voice/' + timestamp + '.webm');
+    storageRef.put(blob).then(() => storageRef.getDownloadURL().then(url => {
+      db.ref('messages').push({ sender, voice: url, timestamp });
+    }));
+  };
+  mediaRecorder.start();
+  setTimeout(() => mediaRecorder.stop(), 5000); // record 5s
+});
 
-  // Listen to new messages
-  db.ref('messages').on('child_added', snapshot => {
-    const msg = snapshot.val();
-    addMessage(msg.sender, msg.text, msg.timestamp);
+// Edit message
+function editMessage(id, data) {
+  const newText = prompt("Edit your message:", data.text || "");
+  if (newText === null) return; // cancel
+  db.ref('messages/' + id).update({ text: newText });
+}
 
-    // Limit messages to MESSAGE_LIMIT
-    db.ref('messages').once('value', snap => {
-      if (snap.numChildren() > MESSAGE_LIMIT) {
-        const firstKey = Object.keys(snap.val())[0];
-        db.ref('messages/' + firstKey).remove();
-      }
-    });
-  });
-
-  // Listen for typing
-  db.ref('typing').on('value', snapshot => {
-    const typing = snapshot.val() || {};
-    if (typing['Zee'] && senderSelect.value !== 'Zee') {
-      typingIndicator.textContent = 'Zee is typing...';
-    } else if (typing['Maria'] && senderSelect.value !== 'Maria') {
-      typingIndicator.textContent = 'Maria is typing...';
-    } else {
-      typingIndicator.textContent = '';
+// Listen messages
+db.ref('messages').on('child_added', snap => addMessage(snap.key, snap.val().sender, snap.val()));
+db.ref('messages').on('child_changed', snap => {
+  // update message
+  const msgDivs = document.querySelectorAll('.message');
+  msgDivs.forEach(div => {
+    if (div.dataset.id === snap.key) {
+      div.querySelector('strong').nextSibling.textContent = ' ' + (snap.val().text || '');
     }
   });
-
+});
+db.ref('messages').on('child_removed', snap => {
+  const msgDivs = document.querySelectorAll('.message');
+  msgDivs.forEach(div => { if (div.dataset.id === snap.key) div.remove(); });
+});
 </script>
 </body>
-</html>
+  </html>
