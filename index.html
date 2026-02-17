@@ -71,19 +71,19 @@ const sendBtn = document.getElementById('sendBtn');
 const imageBtn = document.getElementById('imageBtn');
 const voiceBtn = document.getElementById('voiceBtn');
 
-// Temporary user names
-const users = ['Zee', 'Maria'];
+// User names
+const users = ['Zee','Maria'];
 let currentUser = users[Math.floor(Math.random()*2)];
-let otherUser = users.find(u => u!==currentUser);
+let otherUser = users.find(u=>u!==currentUser);
 
 // Show chat after 3 seconds
-setTimeout(() => {
-  welcomeScreen.style.display = 'none';
-  chatContainer.style.display = 'flex';
-}, 3000);
+setTimeout(()=>{
+  welcomeScreen.style.display='none';
+  chatContainer.style.display='flex';
+},3000);
 
-// Utility to add messages
-function addMessage(id, msg){
+// Add message
+function addMessage(id,msg){
   const msgDiv = document.createElement('div');
   msgDiv.className = 'message';
   msgDiv.dataset.id = id;
@@ -100,7 +100,7 @@ function addMessage(id, msg){
   messagesDiv.appendChild(msgDiv);
   messagesDiv.scrollTop = messagesDiv.scrollHeight;
 
-  // Edit message on long press
+  // Edit on long press
   let pressTimer;
   msgDiv.addEventListener('mousedown', ()=>{ pressTimer = setTimeout(()=>editMessage(id,msg),600); });
   msgDiv.addEventListener('mouseup', ()=>clearTimeout(pressTimer));
@@ -122,37 +122,37 @@ function sendMessage(){
   db.ref('messages').push({sender: currentUser, text, timestamp});
   inputField.value='';
 }
-sendBtn.addEventListener('click', sendMessage);
-inputField.addEventListener('keypress', e=>{if(e.key==='Enter') sendMessage();});
+sendBtn.addEventListener('click',sendMessage);
+inputField.addEventListener('keypress',e=>{if(e.key==='Enter') sendMessage();});
 
 // Send image
-imageBtn.addEventListener('click', ()=>{
+imageBtn.addEventListener('click',()=>{
   const fileInput=document.createElement('input');
   fileInput.type='file'; fileInput.accept='image/*';
   fileInput.onchange=e=>{
     const file=e.target.files[0]; if(!file) return;
-    const timestamp = Date.now();
-    const storageRef = storage.ref('images/' + timestamp + '_' + file.name);
+    const timestamp=Date.now();
+    const storageRef=storage.ref('images/'+timestamp+'_'+file.name);
     storageRef.put(file).then(()=>storageRef.getDownloadURL().then(url=>{
-      db.ref('messages').push({sender: currentUser, image:url, timestamp});
+      db.ref('messages').push({sender:currentUser,image:url,timestamp});
     }));
   };
   fileInput.click();
 });
 
 // Send voice
-voiceBtn.addEventListener('click', async ()=>{
-  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ alert("Audio not supported"); return; }
+voiceBtn.addEventListener('click',async()=>{
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ alert("Audio not supported"); return;}
   const stream = await navigator.mediaDevices.getUserMedia({audio:true});
   const mediaRecorder = new MediaRecorder(stream);
   const chunks=[];
   mediaRecorder.ondataavailable=e=>chunks.push(e.data);
   mediaRecorder.onstop=async()=>{
     const blob = new Blob(chunks,{type:'audio/webm'});
-    const timestamp = Date.now();
-    const storageRef = storage.ref('voice/'+timestamp+'.webm');
+    const timestamp=Date.now();
+    const storageRef=storage.ref('voice/'+timestamp+'.webm');
     storageRef.put(blob).then(()=>storageRef.getDownloadURL().then(url=>{
-      db.ref('messages').push({sender: currentUser, voice:url, timestamp});
+      db.ref('messages').push({sender:currentUser,voice:url,timestamp});
     }));
   };
   mediaRecorder.start();
@@ -160,12 +160,12 @@ voiceBtn.addEventListener('click', async ()=>{
 });
 
 // Listen messages
-db.ref('messages').on('child_added', snap=>addMessage(snap.key,snap.val()));
-db.ref('messages').on('child_changed', snap=>{
+db.ref('messages').on('child_added',snap=>addMessage(snap.key,snap.val()));
+db.ref('messages').on('child_changed',snap=>{
   const msgDivs=document.querySelectorAll('.message');
   msgDivs.forEach(div=>{ if(div.dataset.id===snap.key) div.querySelector('strong').nextSibling.textContent=' '+(snap.val().text||''); });
 });
-db.ref('messages').on('child_removed', snap=>{
+db.ref('messages').on('child_removed',snap=>{
   const msgDivs=document.querySelectorAll('.message');
   msgDivs.forEach(div=>{ if(div.dataset.id===snap.key) div.remove(); });
 });
