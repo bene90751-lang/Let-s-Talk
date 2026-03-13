@@ -1,1 +1,1110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Tallen Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#080B14;--bg2:#0D1120;--bg3:#111827;--card:#141B2D;--card2:#1A2238;
+  --border:#1F2D47;--accent:#00C6FF;--accent2:#0072FF;--gold:#FFD700;
+  --green:#00FF88;--red:#FF4757;--purple:#A855F7;--orange:#FF8C00;
+  --text:#F0F4FF;--text2:#8B9CC8;--text3:#4A5780;
+  --radius:16px;--radius2:24px;
+  /* syntax colors */
+  --syn-tag:#FF79C6;--syn-attr:#50FA7B;--syn-val:#F1FA8C;--syn-str:#FF5555;
+  --syn-comment:#6272A4;--syn-kw:#BD93F9;--syn-num:#FFB86C;--syn-css:#8BE9FD;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);position:relative;}
+body::before{content:'';position:fixed;inset:0;background:
+  radial-gradient(ellipse 60% 40% at 20% 10%,rgba(0,114,255,.08) 0%,transparent 60%),
+  radial-gradient(ellipse 40% 60% at 80% 80%,rgba(168,85,247,.06) 0%,transparent 60%);
+  pointer-events:none;z-index:0;}
 
+/* SCREENS */
+.screen{position:fixed;inset:0;display:flex;flex-direction:column;opacity:0;pointer-events:none;
+  transform:translateX(100%);transition:transform .42s cubic-bezier(.4,0,.2,1),opacity .3s;z-index:1;overflow:hidden;}
+.screen.active{opacity:1;pointer-events:all;transform:translateX(0);}
+.screen.out-left{opacity:0;transform:translateX(-100%);}
+
+/* SPLASH */
+#splash{background:var(--bg);align-items:center;justify-content:center;gap:18px;z-index:100;}
+.splash-logo{width:110px;height:110px;background:linear-gradient(135deg,#0072FF,#00C6FF);border-radius:28px;
+  display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:42px;font-weight:800;
+  color:white;box-shadow:0 0 60px rgba(0,198,255,.5),0 0 120px rgba(0,114,255,.3);animation:logoPulse 2s ease-in-out infinite;
+  position:relative;overflow:hidden;}
+.splash-logo::after{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;
+  background:linear-gradient(45deg,transparent 30%,rgba(255,255,255,.15) 50%,transparent 70%);animation:shine 3s ease-in-out infinite;}
+@keyframes logoPulse{0%,100%{box-shadow:0 0 60px rgba(0,198,255,.5),0 0 120px rgba(0,114,255,.3);}
+  50%{box-shadow:0 0 90px rgba(0,198,255,.8),0 0 180px rgba(0,114,255,.5);}}
+@keyframes shine{0%{transform:translateX(-100%) rotate(45deg);}100%{transform:translateX(100%) rotate(45deg);}}
+.splash-title{font-family:'Syne',sans-serif;font-size:36px;font-weight:800;
+  background:linear-gradient(135deg,#fff 0%,#00C6FF 50%,#0072FF 100%);-webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-1px;}
+.splash-badge{background:linear-gradient(135deg,rgba(0,255,136,.15),rgba(0,198,255,.15));
+  border:1px solid rgba(0,255,136,.3);border-radius:50px;padding:8px 20px;font-size:12px;color:var(--green);
+  font-weight:600;letter-spacing:.5px;}
+.splash-sub{color:var(--text2);font-size:14px;text-align:center;max-width:260px;line-height:1.6;}
+.splash-prog{width:200px;height:3px;background:var(--border);border-radius:10px;overflow:hidden;margin-top:8px;}
+.splash-prog-bar{height:100%;background:linear-gradient(90deg,#0072FF,#00C6FF);border-radius:10px;animation:loadBar 2.6s ease-in-out forwards;}
+@keyframes loadBar{from{width:0%}to{width:100%}}
+
+/* TOPBAR */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;
+  background:rgba(8,11,20,.97);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);flex-shrink:0;z-index:10;}
+.topbar-left{display:flex;align-items:center;gap:10px;}
+.topbar-icon{width:36px;height:36px;background:linear-gradient(135deg,#0072FF,#00C6FF);border-radius:10px;
+  display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;
+  font-size:16px;color:white;box-shadow:0 0 20px rgba(0,198,255,.4);flex-shrink:0;}
+.topbar-title{font-family:'Syne',sans-serif;font-weight:800;font-size:17px;
+  background:linear-gradient(135deg,#fff,#00C6FF);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.topbar-subtitle{font-size:10px;color:var(--text3);font-weight:500;letter-spacing:.5px;margin-top:1px;}
+.free-badge{background:linear-gradient(135deg,rgba(0,255,136,.2),rgba(0,198,255,.1));
+  border:1px solid rgba(0,255,136,.4);border-radius:20px;padding:4px 10px;font-size:10px;
+  color:var(--green);font-weight:700;white-space:nowrap;}
+.back-btn{width:36px;height:36px;background:var(--card2);border:1px solid var(--border);border-radius:10px;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;flex-shrink:0;
+  transition:all .2s;border:none;color:var(--text);}
+.back-btn:active{transform:scale(.92);background:var(--card);}
+
+/* BOTTOM NAV */
+.bottom-nav{display:flex;background:rgba(8,11,20,.98);backdrop-filter:blur(20px);
+  border-top:1px solid var(--border);padding:8px 0 max(8px,env(safe-area-inset-bottom));flex-shrink:0;}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 4px;
+  cursor:pointer;transition:all .2s;border:none;background:none;color:var(--text3);position:relative;}
+.nav-item.active{color:var(--accent);}
+.nav-dot{width:4px;height:4px;background:var(--accent);border-radius:50%;position:absolute;
+  bottom:2px;box-shadow:0 0 8px var(--accent);display:none;}
+.nav-item.active .nav-dot{display:block;}
+.nav-icon{font-size:21px;line-height:1;}
+.nav-label{font-size:10px;font-weight:600;letter-spacing:.3px;}
+
+/* ===== HOME ===== */
+#home{background:var(--bg);}
+.home-scroll{flex:1;overflow-y:auto;overflow-x:hidden;padding:18px 15px;display:flex;flex-direction:column;gap:14px;}
+.home-scroll::-webkit-scrollbar{display:none;}
+.hero-card{background:linear-gradient(135deg,#0a1628,#0d1f3c 50%,#0a1628);border:1px solid rgba(0,198,255,.2);
+  border-radius:var(--radius2);padding:22px 18px;position:relative;overflow:hidden;}
+.hero-card::before{content:'';position:absolute;top:-30px;right:-30px;width:180px;height:180px;
+  background:radial-gradient(circle,rgba(0,198,255,.12) 0%,transparent 70%);}
+.hero-tag{display:inline-flex;align-items:center;gap:6px;background:rgba(0,255,136,.1);
+  border:1px solid rgba(0,255,136,.25);border-radius:20px;padding:4px 12px;font-size:11px;
+  color:var(--green);font-weight:600;margin-bottom:12px;}
+.hero-dot{width:6px;height:6px;background:var(--green);border-radius:50%;animation:blink 1.5s ease-in-out infinite;box-shadow:0 0 6px var(--green);}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.hero-h{font-family:'Syne',sans-serif;font-size:25px;font-weight:800;line-height:1.2;margin-bottom:8px;position:relative;z-index:1;}
+.hero-h span{background:linear-gradient(135deg,#00C6FF,#0072FF);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hero-p{color:var(--text2);font-size:13px;line-height:1.6;margin-bottom:16px;position:relative;z-index:1;}
+.hero-btns{display:flex;gap:10px;flex-wrap:wrap;position:relative;z-index:1;}
+.btn-primary{background:linear-gradient(135deg,#0072FF,#00C6FF);border:none;border-radius:12px;padding:11px 20px;
+  color:white;font-family:'DM Sans',sans-serif;font-weight:700;font-size:13px;cursor:pointer;
+  transition:all .2s;box-shadow:0 4px 20px rgba(0,114,255,.4);display:flex;align-items:center;gap:7px;}
+.btn-primary:active{transform:scale(.96);}
+.btn-secondary{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:11px 18px;
+  color:var(--text);font-family:'DM Sans',sans-serif;font-weight:600;font-size:13px;cursor:pointer;
+  transition:all .2s;display:flex;align-items:center;gap:7px;}
+.btn-secondary:active{transform:scale(.96);}
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:13px 10px;text-align:center;position:relative;overflow:hidden;}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.stat-card:nth-child(1)::before{background:linear-gradient(90deg,#0072FF,#00C6FF);}
+.stat-card:nth-child(2)::before{background:linear-gradient(90deg,#A855F7,#EC4899);}
+.stat-card:nth-child(3)::before{background:linear-gradient(90deg,#00FF88,#00C6FF);}
+.stat-num{font-family:'Syne',sans-serif;font-size:21px;font-weight:800;}
+.stat-label{font-size:10px;color:var(--text3);font-weight:500;margin-top:2px;}
+.section-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:10px;}
+.features-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
+.feat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:15px 13px;
+  cursor:pointer;transition:all .25s;position:relative;overflow:hidden;}
+.feat-card:active{transform:scale(.97);border-color:var(--accent);}
+.feat-icon{font-size:24px;margin-bottom:7px;}
+.feat-name{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;margin-bottom:3px;}
+.feat-desc{font-size:11px;color:var(--text2);line-height:1.4;}
+.free-banner{background:linear-gradient(135deg,rgba(0,255,136,.08),rgba(0,198,255,.08));
+  border:1px solid rgba(0,255,136,.2);border-radius:var(--radius);padding:15px;display:flex;align-items:center;gap:12px;}
+.free-icon{font-size:30px;flex-shrink:0;}
+.free-title{font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:var(--green);margin-bottom:3px;}
+.free-desc{font-size:12px;color:var(--text2);line-height:1.5;}
+.made-by{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:13px;display:flex;align-items:center;gap:12px;}
+.made-avatar{width:42px;height:42px;background:linear-gradient(135deg,#A855F7,#EC4899);border-radius:12px;
+  display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.made-name{font-family:'Syne',sans-serif;font-weight:700;font-size:14px;}
+.made-role{font-size:11px;color:var(--text2);margin-top:2px;}
+
+/* ===== EDITOR ===== */
+#editor{background:var(--bg);}
+.editor-toolbar{display:flex;align-items:center;gap:7px;padding:10px 14px;border-bottom:1px solid var(--border);
+  background:var(--bg2);flex-wrap:wrap;flex-shrink:0;}
+.tbtn{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:7px 11px;
+  color:var(--text);font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;
+  gap:5px;white-space:nowrap;font-family:'DM Sans',sans-serif;}
+.tbtn:active{transform:scale(.94);}
+.tbtn.green{border-color:rgba(0,255,136,.4);color:var(--green);}
+.tbtn.red{border-color:rgba(255,71,87,.4);color:var(--red);}
+.tbtn.blue{border-color:rgba(0,198,255,.4);color:var(--accent);}
+.tbtn.gold{border-color:rgba(255,215,0,.4);color:var(--gold);}
+.tbtn.purple{border-color:rgba(168,85,247,.4);color:var(--purple);}
+.tbtn.orange{border-color:rgba(255,140,0,.4);color:var(--orange);}
+.editor-meta{padding:8px 14px;background:var(--bg2);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.char-count{font-size:11px;color:var(--text3);}
+.editor-badges{display:flex;gap:6px;}
+.syn-badge{background:rgba(0,198,255,.1);border:1px solid rgba(0,198,255,.2);border-radius:6px;
+  padding:3px 8px;font-size:10px;color:var(--accent);font-weight:600;}
+
+/* SYNTAX EDITOR WRAPPER */
+.editor-wrapper{flex:1;position:relative;overflow:hidden;display:flex;}
+.line-numbers{width:40px;background:#060911;color:var(--text3);font-family:'JetBrains Mono',monospace;
+  font-size:12px;line-height:1.7;padding:14px 6px 14px 8px;text-align:right;overflow:hidden;
+  flex-shrink:0;border-right:1px solid var(--border);user-select:none;pointer-events:none;}
+.code-area{flex:1;position:relative;overflow:hidden;}
+/* The visible highlighted layer */
+#codeHighlight{position:absolute;inset:0;padding:14px 14px;font-family:'JetBrains Mono',monospace;
+  font-size:12.5px;line-height:1.7;white-space:pre-wrap;word-wrap:break-word;
+  pointer-events:none;z-index:1;overflow:hidden;color:transparent;background:transparent;}
+/* The actual textarea — sits on top, transparent text */
+#htmlInput{position:absolute;inset:0;background:#060911;color:rgba(240,244,255,.85);
+  border:none;outline:none;padding:14px 14px;font-family:'JetBrains Mono',monospace;
+  font-size:12.5px;line-height:1.7;resize:none;tab-size:2;caret-color:#00C6FF;
+  white-space:pre;overflow-wrap:normal;overflow-x:auto;overflow-y:auto;z-index:2;
+  -webkit-overflow-scrolling:touch;}
+#htmlInput::selection{background:rgba(0,114,255,.35);}
+#htmlInput::-webkit-scrollbar{width:4px;height:4px;}
+#htmlInput::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+
+/* Syntax token colors */
+.tok-tag{color:var(--syn-tag);}
+.tok-attr{color:var(--syn-attr);}
+.tok-val{color:var(--syn-val);}
+.tok-str{color:var(--syn-str);}
+.tok-comment{color:var(--syn-comment);font-style:italic;}
+.tok-kw{color:var(--syn-kw);}
+.tok-num{color:var(--syn-num);}
+.tok-css{color:var(--syn-css);}
+.tok-entity{color:var(--syn-tag);}
+.tok-plain{color:rgba(240,244,255,.85);}
+
+/* ===== PREVIEW ===== */
+#preview{background:#0A0C14;}
+.preview-bar{display:flex;align-items:center;gap:9px;padding:12px 14px;
+  background:rgba(8,11,20,.97);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);flex-shrink:0;}
+.preview-title-area{flex:1;}
+.preview-title{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;}
+.preview-status{font-size:10px;color:var(--green);margin-top:1px;display:flex;align-items:center;gap:4px;}
+.pv-btn{height:34px;background:var(--card2);border:1px solid var(--border);border-radius:9px;
+  padding:0 11px;color:var(--text);font-size:12px;font-weight:600;cursor:pointer;display:flex;
+  align-items:center;gap:5px;white-space:nowrap;transition:all .2s;font-family:'DM Sans',sans-serif;}
+.pv-btn:active{transform:scale(.94);}
+.pv-btn.green{color:var(--green);border-color:rgba(0,255,136,.3);}
+.pv-btn.red{color:var(--red);border-color:rgba(255,71,87,.3);}
+.pv-btn.blue{color:var(--accent);border-color:rgba(0,198,255,.3);}
+.pv-btn.gold{color:var(--gold);border-color:rgba(255,215,0,.3);}
+/* Phone view */
+.phone-wrapper{flex:1;display:flex;align-items:center;justify-content:center;padding:14px 18px;overflow:hidden;}
+.phone-frame{background:#111;border-radius:38px;border:3px solid #2a2a3e;
+  box-shadow:0 0 0 1px #1a1a2e,0 20px 80px rgba(0,0,0,.8),0 0 60px rgba(0,114,255,.1);
+  overflow:hidden;position:relative;width:100%;max-width:320px;
+  height:calc(100dvh - 200px);max-height:580px;display:flex;flex-direction:column;}
+.phone-notch{background:#111;height:26px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.phone-notch-bar{width:90px;height:18px;background:#000;border-radius:0 0 14px 14px;
+  display:flex;align-items:center;justify-content:center;gap:5px;}
+.phone-notch-bar span{width:7px;height:7px;background:#222;border-radius:50%;}
+.phone-notch-bar span:last-child{width:3.5px;height:3.5px;}
+.phone-screen{flex:1;overflow:hidden;display:flex;flex-direction:column;}
+#previewFrame{width:100%;height:100%;border:none;background:white;display:none;}
+.preview-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:10px;color:var(--text3);padding:20px;text-align:center;}
+.preview-empty-icon{font-size:44px;opacity:.4;}
+.preview-empty-text{font-size:13px;line-height:1.6;}
+
+/* FULL PREVIEW (fullscreen iframe) */
+#fullPreview{background:#000;z-index:200;}
+.full-preview-bar{display:flex;align-items:center;gap:10px;padding:12px 14px;
+  background:rgba(0,0,0,.95);border-bottom:1px solid rgba(255,255,255,.08);flex-shrink:0;}
+.full-preview-title{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;flex:1;}
+.full-preview-sub{font-size:10px;color:var(--text3);margin-top:1px;}
+#fullPreviewFrame{flex:1;width:100%;border:none;background:white;}
+
+/* ===== TALLEN AI ===== */
+#tallenai{background:var(--bg);}
+.ai-header{padding:14px;border-bottom:1px solid var(--border);background:var(--bg2);
+  display:flex;align-items:center;gap:13px;flex-shrink:0;}
+.ai-avatar{width:46px;height:46px;background:linear-gradient(135deg,#A855F7,#0072FF,#00C6FF);
+  border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;
+  box-shadow:0 0 30px rgba(168,85,247,.4);flex-shrink:0;position:relative;animation:aiGlow 3s ease-in-out infinite;}
+@keyframes aiGlow{0%,100%{box-shadow:0 0 30px rgba(168,85,247,.4);}50%{box-shadow:0 0 50px rgba(0,198,255,.6);}}
+.ai-online{position:absolute;bottom:-2px;right:-2px;width:11px;height:11px;background:var(--green);
+  border-radius:50%;border:2px solid var(--bg2);box-shadow:0 0 8px var(--green);animation:blink 2s ease-in-out infinite;}
+.ai-name{font-family:'Syne',sans-serif;font-weight:800;font-size:16px;
+  background:linear-gradient(135deg,#A855F7,#00C6FF);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.ai-status{font-size:11px;color:var(--green);margin-top:2px;display:flex;align-items:center;gap:4px;}
+.ai-desc{font-size:11px;color:var(--text2);margin-top:2px;}
+.chat-area{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:11px;}
+.chat-area::-webkit-scrollbar{width:3px;}
+.chat-area::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+.chat-msg{display:flex;gap:8px;align-items:flex-end;animation:msgIn .3s cubic-bezier(.4,0,.2,1);}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.chat-msg.user{flex-direction:row-reverse;}
+.chat-bubble{max-width:82%;padding:11px 13px;border-radius:17px;font-size:13px;line-height:1.6;}
+.chat-msg.ai .chat-bubble{background:var(--card2);border:1px solid var(--border);border-bottom-left-radius:4px;color:var(--text);}
+.chat-msg.user .chat-bubble{background:linear-gradient(135deg,#0072FF,#00C6FF);color:white;border-bottom-right-radius:4px;}
+.chat-icon{width:28px;height:28px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+.chat-icon.ai{background:linear-gradient(135deg,#A855F7,#0072FF);}
+.chat-icon.user{background:linear-gradient(135deg,#0072FF,#00C6FF);color:white;}
+.typing-dots{background:var(--card2);border:1px solid var(--border);border-radius:17px;border-bottom-left-radius:4px;
+  padding:11px 15px;display:flex;gap:4px;align-items:center;}
+.typing-dot{width:5px;height:5px;background:var(--text3);border-radius:50%;animation:tdot 1.4s ease-in-out infinite;}
+.typing-dot:nth-child(2){animation-delay:.2s;}.typing-dot:nth-child(3){animation-delay:.4s;}
+@keyframes tdot{0%,60%,100%{transform:translateY(0);}30%{transform:translateY(-6px);}}
+.quick-replies{display:flex;gap:7px;padding:0 14px 8px;overflow-x:auto;flex-shrink:0;}
+.quick-replies::-webkit-scrollbar{display:none;}
+.chip{background:var(--card2);border:1px solid var(--border);border-radius:20px;padding:6px 13px;
+  font-size:12px;color:var(--text2);cursor:pointer;white-space:nowrap;transition:all .2s;font-family:'DM Sans',sans-serif;}
+.chip:active{background:rgba(0,198,255,.1);border-color:var(--accent);color:var(--accent);}
+.chat-input-area{padding:10px 14px;padding-bottom:max(10px,env(safe-area-inset-bottom));background:var(--bg2);
+  border-top:1px solid var(--border);display:flex;gap:9px;align-items:flex-end;flex-shrink:0;}
+.chat-input{flex:1;background:var(--card);border:1px solid var(--border);border-radius:15px;padding:11px 14px;
+  color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;resize:none;
+  max-height:100px;min-height:42px;line-height:1.4;transition:border-color .2s;}
+.chat-input:focus{border-color:rgba(0,198,255,.4);}
+.chat-input::placeholder{color:var(--text3);}
+.send-btn{width:42px;height:42px;background:linear-gradient(135deg,#0072FF,#00C6FF);border:none;border-radius:13px;
+  color:white;font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  transition:all .2s;box-shadow:0 4px 15px rgba(0,114,255,.4);}
+.send-btn:active{transform:scale(.88);}
+
+/* ===== SETTINGS ===== */
+#settings{background:var(--bg);}
+.settings-scroll{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;}
+.settings-scroll::-webkit-scrollbar{display:none;}
+.set-section{font-size:10px;font-weight:700;color:var(--text3);letter-spacing:1px;text-transform:uppercase;padding:4px 0 6px;}
+.set-item{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:13px 14px;
+  display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .2s;}
+.set-item:active{background:var(--card2);}
+.set-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.set-label{font-size:13px;font-weight:600;flex:1;}
+.set-val{font-size:11px;color:var(--text3);}
+.toggle{width:42px;height:23px;background:var(--border);border-radius:12px;position:relative;
+  cursor:pointer;transition:background .3s;flex-shrink:0;}
+.toggle.on{background:linear-gradient(135deg,#0072FF,#00C6FF);}
+.toggle::after{content:'';position:absolute;top:2px;left:2px;width:19px;height:19px;background:white;
+  border-radius:50%;transition:transform .3s cubic-bezier(.4,0,.2,1);box-shadow:0 2px 6px rgba(0,0,0,.3);}
+.toggle.on::after{transform:translateX(19px);}
+
+/* TOAST */
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--card2);
+  border:1px solid var(--border);border-radius:12px;padding:9px 18px;font-size:13px;color:var(--text);
+  font-weight:600;z-index:9999;opacity:0;transition:all .3s;white-space:nowrap;backdrop-filter:blur(20px);
+  box-shadow:0 8px 32px rgba(0,0,0,.4);pointer-events:none;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(8px);
+  z-index:500;display:flex;align-items:flex-end;opacity:0;pointer-events:none;transition:opacity .3s;}
+.modal-overlay.show{opacity:1;pointer-events:all;}
+.modal-sheet{width:100%;background:var(--bg2);border-radius:22px 22px 0 0;border:1px solid var(--border);
+  border-bottom:none;padding:18px;transform:translateY(100%);transition:transform .38s cubic-bezier(.4,0,.2,1);}
+.modal-overlay.show .modal-sheet{transform:translateY(0);}
+.modal-handle{width:38px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 14px;}
+.modal-title{font-family:'Syne',sans-serif;font-weight:800;font-size:17px;margin-bottom:5px;}
+.modal-desc{font-size:13px;color:var(--text2);margin-bottom:18px;line-height:1.5;}
+.modal-btns{display:flex;gap:9px;}
+.modal-cancel{flex:1;padding:13px;background:var(--card2);border:1px solid var(--border);border-radius:11px;
+  color:var(--text);font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.modal-confirm{flex:1;padding:13px;background:linear-gradient(135deg,var(--red),#FF6B7A);border:none;
+  border-radius:11px;color:white;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;}
+
+/* FILE UPLOAD HIDDEN */
+#fileUpload{display:none;}
+
+/* Upload drop zone in editor */
+.upload-zone{margin:0 14px 0;background:rgba(0,198,255,.05);border:1.5px dashed rgba(0,198,255,.25);
+  border-radius:12px;padding:13px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .2s;flex-shrink:0;}
+.upload-zone:active{background:rgba(0,198,255,.1);border-color:var(--accent);}
+.upload-zone-icon{font-size:22px;flex-shrink:0;}
+.upload-zone-text{font-size:12px;color:var(--text2);line-height:1.4;}
+.upload-zone-text strong{color:var(--accent);font-weight:700;}
+</style>
+</head>
+<body>
+
+<!-- FILE INPUT -->
+<input type="file" id="fileUpload" accept=".html,.htm" />
+
+<!-- SPLASH -->
+<div class="screen active" id="splash">
+  <div class="splash-logo">T</div>
+  <div class="splash-title">Tallen Studio</div>
+  <div class="splash-badge">⚡ 100% FREE — No Subscription Ever</div>
+  <div class="splash-sub">Build, Preview & Launch HTML Apps from your phone</div>
+  <div class="splash-prog"><div class="splash-prog-bar"></div></div>
+  <div style="font-size:11px;color:var(--text3);margin-top:4px;">Made with ❤️ by Tallen</div>
+</div>
+
+<!-- HOME -->
+<div class="screen" id="home">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-icon">T</div>
+      <div>
+        <div class="topbar-title">Tallen Studio</div>
+        <div class="topbar-subtitle">HTML App Builder</div>
+      </div>
+    </div>
+    <div class="free-badge">✅ 100% FREE</div>
+  </div>
+  <div class="home-scroll">
+    <div class="hero-card">
+      <div class="hero-tag"><div class="hero-dot"></div> Live & Ready</div>
+      <div class="hero-h">Build Any <span>HTML App</span><br>On Your Phone</div>
+      <div class="hero-p">Paste HTML, upload a file, preview live in a phone frame — download it instantly. 100% free. No subscription. Forever.</div>
+      <div class="hero-btns">
+        <button class="btn-primary" onclick="showTab('editor')">✏️ Start Coding</button>
+        <button class="btn-secondary" onclick="showTab('tallenai')">🤖 Ask Tallen AI</button>
+      </div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-num">∞</div><div class="stat-label">Apps Built</div></div>
+      <div class="stat-card"><div class="stat-num">0₦</div><div class="stat-label">Cost</div></div>
+      <div class="stat-card"><div class="stat-num">100%</div><div class="stat-label">Free Always</div></div>
+    </div>
+    <div class="section-title">✨ Features</div>
+    <div class="features-grid">
+      <div class="feat-card" onclick="showTab('editor')">
+        <div class="feat-icon">✏️</div><div class="feat-name">HTML Editor</div>
+        <div class="feat-desc">Syntax highlighted code editor</div>
+      </div>
+      <div class="feat-card" onclick="showTab('editor');setTimeout(()=>runPreview(),200)">
+        <div class="feat-icon">📱</div><div class="feat-name">Live Preview</div>
+        <div class="feat-desc">Phone frame + fullscreen preview</div>
+      </div>
+      <div class="feat-card" onclick="triggerUpload()">
+        <div class="feat-icon">📂</div><div class="feat-name">Upload HTML</div>
+        <div class="feat-desc">Open .html files from your device</div>
+      </div>
+      <div class="feat-card" onclick="showTab('tallenai')">
+        <div class="feat-icon">🤖</div><div class="feat-name">Tallen AI</div>
+        <div class="feat-desc">Your personal AI assistant</div>
+      </div>
+    </div>
+    <div class="free-banner">
+      <div class="free-icon">🎉</div>
+      <div>
+        <div class="free-title">100% FREE — Forever!</div>
+        <div class="free-desc">Unlike other apps that force subscriptions, Tallen Studio is free forever. No hidden fees. No limits.</div>
+      </div>
+    </div>
+    <div class="made-by">
+      <div class="made-avatar">👑</div>
+      <div>
+        <div class="made-name">Made by Tallen</div>
+        <div class="made-role">App Developer & Creator</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px;">Powered by Tallen AI</div>
+      </div>
+    </div>
+    <div style="height:8px"></div>
+  </div>
+  <div class="bottom-nav">
+    <button class="nav-item active" onclick="showTab('home')"><div class="nav-icon">🏠</div><div class="nav-label">Home</div><div class="nav-dot"></div></button>
+    <button class="nav-item" onclick="showTab('editor')"><div class="nav-icon">✏️</div><div class="nav-label">Editor</div><div class="nav-dot"></div></button>
+    <button class="nav-item" onclick="showTab('tallenai')"><div class="nav-icon">🤖</div><div class="nav-label">Tallen AI</div><div class="nav-dot"></div></button>
+    <button class="nav-item" onclick="showTab('settings')"><div class="nav-icon">⚙️</div><div class="nav-label">Settings</div><div class="nav-dot"></div></button>
+  </div>
+</div>
+
+<!-- EDITOR -->
+<div class="screen" id="editor">
+  <div class="topbar">
+    <div class="topbar-left">
+      <button class="back-btn" onclick="showTab('home')">←</button>
+      <div>
+        <div class="topbar-title">HTML Editor</div>
+        <div class="topbar-subtitle">Paste your full HTML code</div>
+      </div>
+    </div>
+    <div class="free-badge">HTML</div>
+  </div>
+  <div class="editor-toolbar">
+    <button class="tbtn green" onclick="runPreview()">▶ Preview</button>
+    <button class="tbtn gold" onclick="downloadHTML()">⬇ Save</button>
+    <button class="tbtn blue" onclick="copyHTML()">📋 Copy</button>
+    <button class="tbtn orange" onclick="triggerUpload()">📂 Upload</button>
+    <button class="tbtn" onclick="insertTemplate()">📄 Template</button>
+    <button class="tbtn red" onclick="showEraseModal()">🗑 Erase</button>
+  </div>
+  <div class="editor-meta">
+    <div class="char-count" id="charCount">0 chars · 0 lines</div>
+    <div class="editor-badges">
+      <div class="syn-badge" id="syntaxStatus">HTML · Ready</div>
+    </div>
+  </div>
+
+  <!-- Upload zone -->
+  <div class="upload-zone" onclick="triggerUpload()" style="margin:10px 14px 0;">
+    <div class="upload-zone-icon">📂</div>
+    <div class="upload-zone-text"><strong>Upload HTML File</strong><br>Tap to pick a .html file from your device</div>
+  </div>
+
+  <div class="editor-wrapper" style="margin-top:10px;">
+    <div class="line-numbers" id="lineNumbers">1</div>
+    <div class="code-area">
+      <div id="codeHighlight" aria-hidden="true"></div>
+      <textarea id="htmlInput" spellcheck="false" autocorrect="off" autocapitalize="off"
+        placeholder="Paste your HTML here..."></textarea>
+    </div>
+  </div>
+
+  <div class="bottom-nav">
+    <button class="nav-item" onclick="showTab('home')"><div class="nav-icon">🏠</div><div class="nav-label">Home</div><div class="nav-dot"></div></button>
+    <button class="nav-item active" onclick="showTab('editor')"><div class="nav-icon">✏️</div><div class="nav-label">Editor</div><div class="nav-dot"></div></button>
+    <button class="nav-item" onclick="showTab('tallenai')"><div class="nav-icon">🤖</div><div class="nav-label">Tallen AI</div><div class="nav-dot"></div></button>
+    <button class="nav-item" onclick="showTab('settings')"><div class="nav-icon">⚙️</div><div class="nav-label">Settings</div><div class="nav-dot"></div></button>
+  </div>
+</div>
+
+<!-- PREVIEW (phone frame) -->
+<div class="screen" id="preview">
+  <div class="preview-bar">
+    <button class="back-btn" onclick="goBack('preview','editor')">←</button>
+    <div class="preview-title-area">
+      <div class="preview-title">Live Preview</div>
+      <div class="preview-status"><span style="width:6px;height:6px;background:var(--green);border-radius:50%;display:inline-block;animation:blink 1.5s infinite"></span> Phone Frame</div>
+    </div>
+    <button class="pv-btn blue" onclick="openFullPreview()">⛶ Full Preview</button>
+    <button class="pv-btn gold" onclick="downloadHTML()">⬇</button>
+    <button class="pv-btn red" onclick="showEraseModal()">🗑</button>
+  </div>
+  <div class="phone-wrapper">
+    <div class="phone-frame">
+      <div class="phone-notch">
+        <div class="phone-notch-bar"><span></span><span></span><span></span></div>
+      </div>
+      <div class="phone-screen">
+        <div class="preview-empty" id="previewEmpty">
+          <div class="preview-empty-icon">📱</div>
+          <div class="preview-empty-text">No HTML yet.<br>Go to Editor, paste your code<br>then tap ▶ Preview.</div>
+          <button class="btn-secondary" onclick="goBack('preview','editor')" style="margin-top:8px;font-size:12px">← Editor</button>
+        </div>
+        <iframe id="previewFrame" sandbox="allow-scripts allow-same-origin allow-forms allow-modals allow-popups" allowfullscreen></iframe>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FULL PREVIEW -->
+<div class="screen" id="fullPreview">
+  <div class="full-preview-bar">
+    <button class="back-btn" onclick="goBack('fullPreview','preview')">←</button>
+    <div style="flex:1">
+      <div class="full-preview-title">Full Preview</div>
+      <div class="full-preview-sub">Fullscreen — everything showing</div>
+    </div>
+    <button class="pv-btn gold" onclick="downloadHTML()">⬇ Download</button>
+  </div>
+  <iframe id="fullPreviewFrame" sandbox="allow-scripts allow-same-origin allow-forms allow-modals allow-popups" allowfullscreen></iframe>
+</div>
+
+<!-- TALLEN AI -->
+<div class="screen" id="tallenai">
+  <div class="topbar">
+    <div class="topbar-left">
+      <button class="back-btn" onclick="showTab('home')">←</button>
+      <div class="ai-avatar" style="width:36px;height:36px;border-radius:10px;font-size:18px;flex-shrink:0;">🤖<div class="ai-online"></div></div>
+      <div>
+        <div class="ai-name" style="font-size:15px;">Tallen AI</div>
+        <div class="ai-status"><span style="width:5px;height:5px;background:var(--green);border-radius:50%;display:inline-block"></span> Online</div>
+      </div>
+    </div>
+    <div class="free-badge">AI</div>
+  </div>
+  <div class="chat-area" id="chatArea"></div>
+  <div class="quick-replies" id="quickReplies">
+    <div class="chip" onclick="sendChip('Who are you?')">Who are you?</div>
+    <div class="chip" onclick="sendChip('Who made you?')">Who made you?</div>
+    <div class="chip" onclick="sendChip('I want to make a website')">Make a website</div>
+    <div class="chip" onclick="sendChip('Make me a calculator')">Calculator</div>
+    <div class="chip" onclick="sendChip('Is this app free?')">Is it free?</div>
+    <div class="chip" onclick="sendChip('How are you?')">How are you?</div>
+    <div class="chip" onclick="sendChip('How do I preview?')">How to preview?</div>
+  </div>
+  <div class="chat-input-area">
+    <textarea class="chat-input" id="chatInput" placeholder="Ask Tallen AI anything..." rows="1"
+      onkeydown="handleChatKey(event)" oninput="autoResizeInput(this)"></textarea>
+    <button class="send-btn" onclick="sendMessage()">➤</button>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div class="screen" id="settings">
+  <div class="topbar">
+    <div class="topbar-left">
+      <button class="back-btn" onclick="showTab('home')">←</button>
+      <div>
+        <div class="topbar-title">Settings</div>
+        <div class="topbar-subtitle">Customise Tallen Studio</div>
+      </div>
+    </div>
+  </div>
+  <div class="settings-scroll">
+    <div class="set-section">App</div>
+    <div class="set-item"><div class="set-icon" style="background:rgba(0,198,255,.12)">📱</div><div class="set-label">Version</div><div class="set-val">v2.0.0</div></div>
+    <div class="set-item"><div class="set-icon" style="background:rgba(0,255,136,.12)">💚</div><div class="set-label">Subscription</div><div class="set-val" style="color:var(--green);font-weight:700">FREE FOREVER</div></div>
+    <div class="set-item" onclick="toggleS(this)"><div class="set-icon" style="background:rgba(168,85,247,.12)">🌙</div><div class="set-label">Dark Theme</div><div class="toggle on"></div></div>
+    <div class="set-item" onclick="toggleS(this)"><div class="set-icon" style="background:rgba(255,215,0,.12)">⚡</div><div class="set-label">Auto-Save Draft</div><div class="toggle on"></div></div>
+    <div class="set-item" onclick="toggleS(this)"><div class="set-icon" style="background:rgba(0,198,255,.12)">✨</div><div class="set-label">Animations</div><div class="toggle on"></div></div>
+    <div class="set-item" onclick="toggleS(this)"><div class="set-icon" style="background:rgba(0,198,255,.12)">🔢</div><div class="set-label">Line Numbers</div><div class="toggle on"></div></div>
+    <div class="set-item" onclick="toggleS(this)"><div class="set-icon" style="background:rgba(0,255,136,.12)">🎨</div><div class="set-label">Syntax Highlight</div><div class="toggle on"></div></div>
+    <div class="set-item" onclick="toggleS(this)"><div class="set-icon" style="background:rgba(255,140,0,.12)">↹</div><div class="set-label">Tab Key Indent</div><div class="toggle on"></div></div>
+    <div class="set-section">About</div>
+    <div class="set-item"><div class="set-icon" style="background:rgba(168,85,247,.12)">👑</div><div class="set-label">Made By</div><div class="set-val">Tallen</div></div>
+    <div class="set-item"><div class="set-icon" style="background:rgba(255,215,0,.12)">🤖</div><div class="set-label">AI Engine</div><div class="set-val">Tallen AI</div></div>
+    <div class="free-banner" style="margin-top:4px">
+      <div class="free-icon">🎉</div>
+      <div>
+        <div class="free-title">100% Free. Forever.</div>
+        <div class="free-desc">No subscription. No paywall. No trial. Tallen Studio is free for everyone, always.</div>
+      </div>
+    </div>
+    <div style="height:16px"></div>
+  </div>
+  <div class="bottom-nav">
+    <button class="nav-item" onclick="showTab('home')"><div class="nav-icon">🏠</div><div class="nav-label">Home</div><div class="nav-dot"></div></button>
+    <button class="nav-item" onclick="showTab('editor')"><div class="nav-icon">✏️</div><div class="nav-label">Editor</div><div class="nav-dot"></div></button>
+    <button class="nav-item" onclick="showTab('tallenai')"><div class="nav-icon">🤖</div><div class="nav-label">Tallen AI</div><div class="nav-dot"></div></button>
+    <button class="nav-item active" onclick="showTab('settings')"><div class="nav-icon">⚙️</div><div class="nav-label">Settings</div><div class="nav-dot"></div></button>
+  </div>
+</div>
+
+<!-- ERASE MODAL -->
+<div class="modal-overlay" id="eraseModal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">🗑️ Erase All Code?</div>
+    <div class="modal-desc">This will clear everything in the editor and reset preview. Cannot be undone.</div>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="hideModal('eraseModal')">Cancel</button>
+      <button class="modal-confirm" onclick="confirmErase()">Yes, Erase All</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════
+//  SCREEN NAVIGATION
+// ═══════════════════════════════════
+let currentScreen = 'splash';
+const screenHistory = [];
+
+function showTab(id) {
+  const all = ['home','editor','preview','fullPreview','tallenai','settings'];
+  all.forEach(s => {
+    const el = document.getElementById(s);
+    el.classList.remove('active','out-left');
+    el.style.transform = '';
+  });
+  document.getElementById(id).classList.add('active');
+  updateNavActive(id);
+  currentScreen = id;
+}
+
+function pushScreen(to) {
+  const from = currentScreen;
+  screenHistory.push(from);
+  const fromEl = document.getElementById(from);
+  const toEl = document.getElementById(to);
+  fromEl.classList.add('out-left');
+  fromEl.classList.remove('active');
+  toEl.style.transform = 'translateX(100%)';
+  toEl.classList.add('active');
+  requestAnimationFrame(() => { toEl.style.transform = ''; });
+  setTimeout(() => fromEl.classList.remove('out-left'), 450);
+  currentScreen = to;
+}
+
+function goBack(from, fallback) {
+  const prev = screenHistory.pop() || fallback;
+  const fromEl = document.getElementById(from);
+  const toEl = document.getElementById(prev);
+  fromEl.style.transition = 'transform .42s cubic-bezier(.4,0,.2,1), opacity .3s';
+  fromEl.style.transform = 'translateX(100%)';
+  fromEl.style.opacity = '0';
+  setTimeout(() => {
+    fromEl.classList.remove('active');
+    fromEl.style.transform = '';
+    fromEl.style.opacity = '';
+  }, 430);
+  toEl.classList.add('active');
+  updateNavActive(prev);
+  currentScreen = prev;
+}
+
+function updateNavActive(id) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const tabMap = {home:'home',editor:'editor',tallenai:'tallenai',settings:'settings'};
+  if (tabMap[id]) {
+    document.querySelectorAll(`.nav-item`).forEach(n => {
+      if (n.onclick && n.onclick.toString().includes(`'${id}'`)) n.classList.add('active');
+    });
+  }
+}
+
+// ═══════════════════════════════════
+//  SYNTAX HIGHLIGHTER
+//  (chunked, requestAnimationFrame — handles 80k+ chars)
+// ═══════════════════════════════════
+let highlightTimer = null;
+let syncScrollRAF = null;
+
+function escapeHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function highlightHTML(code) {
+  if (!code) return '';
+  // Fast highlight using regex — avoids full DOM parse
+  let result = escapeHtml(code);
+
+  // Comments first (<!-- -->)
+  result = result.replace(/(&lt;!--[\s\S]*?--&gt;)/g, '<span class="tok-comment">$1</span>');
+  // DOCTYPE
+  result = result.replace(/(&lt;!DOCTYPE[^&]*&gt;)/gi, '<span class="tok-tag">$1</span>');
+  // CSS inside <style>
+  result = result.replace(/(&lt;style[\s\S]*?&gt;)([\s\S]*?)(&lt;\/style&gt;)/gi,
+    (m, open, inner, close) => {
+      let cs = inner
+        .replace(/([\w-]+\s*:)/g, '<span class="tok-css">$1</span>')
+        .replace(/(#[0-9a-fA-F]{3,8}|rgba?\([^)]*\))/g, '<span class="tok-num">$1</span>');
+      return `<span class="tok-kw">${open}</span>${cs}<span class="tok-kw">${close}</span>`;
+    });
+  // JS inside <script>
+  result = result.replace(/(&lt;script[\s\S]*?&gt;)([\s\S]*?)(&lt;\/script&gt;)/gi,
+    (m, open, inner, close) => {
+      let js = inner
+        .replace(/(\/\/[^\n]*)/g, '<span class="tok-comment">$1</span>')
+        .replace(/\b(var|let|const|function|return|if|else|for|while|class|new|this|true|false|null|undefined|typeof|import|export|default|async|await)\b/g,
+          '<span class="tok-kw">$1</span>')
+        .replace(/(&quot;[^&]*?&quot;|&#x27;[^&]*?&#x27;)/g, '<span class="tok-str">$1</span>')
+        .replace(/\b(\d+\.?\d*)\b/g, '<span class="tok-num">$1</span>');
+      return `<span class="tok-kw">${open}</span>${js}<span class="tok-kw">${close}</span>`;
+    });
+  // Tags  <tag ... >
+  result = result.replace(/(&lt;\/?)([\w-]+)([\s\S]*?)(\/?&gt;)/g, (m, lt, tag, attrs, gt) => {
+    let highlighted = attrs
+      .replace(/([\w-]+)(\s*=\s*)(&quot;[^&]*?&quot;|[^\s&]+)/g,
+        '<span class="tok-attr">$1</span>$2<span class="tok-val">$3</span>')
+      .replace(/(&quot;[^&]*?&quot;)/g, '<span class="tok-str">$1</span>');
+    return `<span class="tok-tag">${lt}${tag}</span>${highlighted}<span class="tok-tag">${gt}</span>`;
+  });
+  return result;
+}
+
+function scheduleHighlight() {
+  if (highlightTimer) clearTimeout(highlightTimer);
+  // For large code use longer debounce
+  const len = htmlInput.value.length;
+  const delay = len > 20000 ? 600 : len > 5000 ? 200 : 80;
+  highlightTimer = setTimeout(applyHighlight, delay);
+}
+
+function applyHighlight() {
+  const code = htmlInput.value;
+  const highlighted = highlightHTML(code);
+  codeHighlight.innerHTML = highlighted + '\n'; // trailing newline keeps scroll in sync
+}
+
+// Sync scroll between textarea and highlight div
+function syncScroll() {
+  if (syncScrollRAF) cancelAnimationFrame(syncScrollRAF);
+  syncScrollRAF = requestAnimationFrame(() => {
+    codeHighlight.scrollTop = htmlInput.scrollTop;
+    codeHighlight.scrollLeft = htmlInput.scrollLeft;
+    updateLineNumbers();
+  });
+}
+
+function updateLineNumbers() {
+  const lines = htmlInput.value.split('\n').length;
+  const lnEl = document.getElementById('lineNumbers');
+  if (!lnEl) return;
+  let html = '';
+  for (let i = 1; i <= Math.max(lines, 1); i++) html += i + '\n';
+  lnEl.textContent = html;
+  lnEl.scrollTop = htmlInput.scrollTop;
+}
+
+// ═══════════════════════════════════
+//  EDITOR INIT
+// ═══════════════════════════════════
+const htmlInput = document.getElementById('htmlInput');
+const codeHighlight = document.getElementById('codeHighlight');
+const charCount = document.getElementById('charCount');
+
+htmlInput.addEventListener('input', () => {
+  updateMeta();
+  scheduleHighlight();
+  autoSaveDraft();
+});
+htmlInput.addEventListener('scroll', syncScroll);
+htmlInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    const s = htmlInput.selectionStart, en = htmlInput.selectionEnd;
+    htmlInput.value = htmlInput.value.substring(0,s) + '  ' + htmlInput.value.substring(en);
+    htmlInput.selectionStart = htmlInput.selectionEnd = s + 2;
+    htmlInput.dispatchEvent(new Event('input'));
+  }
+});
+
+function updateMeta() {
+  const val = htmlInput.value;
+  const chars = val.length;
+  const lines = val.split('\n').length;
+  charCount.textContent = `${chars.toLocaleString()} chars · ${lines.toLocaleString()} lines`;
+  const status = document.getElementById('syntaxStatus');
+  if (val.includes('<!DOCTYPE') || val.includes('<html')) {
+    status.textContent = 'HTML · Valid';
+    status.style.color = 'var(--green)';
+  } else if (val.trim()) {
+    status.textContent = 'HTML · Partial';
+    status.style.color = 'var(--gold)';
+  } else {
+    status.textContent = 'HTML · Empty';
+    status.style.color = 'var(--text3)';
+  }
+  updateLineNumbers();
+}
+
+function autoSaveDraft() {
+  try { localStorage.setItem('tallen_draft_v2', htmlInput.value); } catch(e){}
+}
+
+// Load saved draft
+try {
+  const draft = localStorage.getItem('tallen_draft_v2') || localStorage.getItem('tallen_draft');
+  if (draft) {
+    htmlInput.value = draft;
+    updateMeta();
+    scheduleHighlight();
+  }
+} catch(e){}
+
+// ═══════════════════════════════════
+//  FILE UPLOAD
+// ═══════════════════════════════════
+const fileUpload = document.getElementById('fileUpload');
+
+function triggerUpload() {
+  fileUpload.click();
+}
+
+fileUpload.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (!file.name.match(/\.html?$/i)) {
+    showToast('⚠️ Please select an .html file'); return;
+  }
+  const maxSize = 5 * 1024 * 1024; // 5MB
+  if (file.size > maxSize) {
+    showToast('⚠️ File too large (max 5MB)'); return;
+  }
+  showToast('📂 Loading file...');
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    const content = ev.target.result;
+    htmlInput.value = content;
+    updateMeta();
+    scheduleHighlight();
+    autoSaveDraft();
+    showToast('✅ ' + file.name + ' loaded!');
+    // Auto-switch to editor if not there
+    if (currentScreen !== 'editor') showTab('editor');
+  };
+  reader.onerror = () => showToast('❌ Error reading file');
+  reader.readAsText(file, 'UTF-8');
+  // Reset input so same file can be re-selected
+  fileUpload.value = '';
+});
+
+// ═══════════════════════════════════
+//  PREVIEW
+// ═══════════════════════════════════
+function runPreview() {
+  const code = htmlInput.value.trim();
+  if (!code) { showToast('⚠️ Paste or upload HTML first!'); return; }
+  pushScreen('preview');
+  const frame = document.getElementById('previewFrame');
+  const empty = document.getElementById('previewEmpty');
+  empty.style.display = 'none';
+  frame.style.display = 'block';
+  // Use srcdoc for safe rendering
+  frame.srcdoc = code;
+  showToast('📱 Preview loaded!');
+}
+
+function openFullPreview() {
+  const code = htmlInput.value.trim();
+  if (!code) { showToast('⚠️ No HTML to preview!'); return; }
+  pushScreen('fullPreview');
+  const ff = document.getElementById('fullPreviewFrame');
+  ff.srcdoc = code;
+  showToast('⛶ Full preview — everything showing!');
+}
+
+// ═══════════════════════════════════
+//  EDITOR ACTIONS
+// ═══════════════════════════════════
+function copyHTML() {
+  const code = htmlInput.value;
+  if (!code.trim()) { showToast('Nothing to copy!'); return; }
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(code).then(() => showToast('📋 Copied!')).catch(() => fallbackCopy(code));
+  } else { fallbackCopy(code); }
+}
+function fallbackCopy(text) {
+  htmlInput.select();
+  try { document.execCommand('copy'); showToast('📋 Copied!'); } catch(e) { showToast('Copy failed'); }
+}
+
+function downloadHTML() {
+  const code = htmlInput.value.trim();
+  if (!code) { showToast('⚠️ No HTML to download!'); return; }
+  try {
+    const blob = new Blob([code], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'tallen-app.html';
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('✅ Saved as tallen-app.html');
+  } catch(e) { showToast('❌ Download failed: ' + e.message); }
+}
+
+function insertTemplate() {
+  if (htmlInput.value.trim()) { showToast('Clear editor first to insert template'); return; }
+  htmlInput.value = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Tallen App</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: sans-serif;
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      text-align: center;
+      padding: 20px;
+    }
+    h1 { font-size: 28px; color: #00C6FF; margin-bottom: 12px; }
+    p { color: #8B9CC8; font-size: 14px; line-height: 1.6; }
+    button {
+      margin-top: 24px;
+      padding: 14px 30px;
+      background: linear-gradient(135deg, #0072FF, #00C6FF);
+      border: none;
+      border-radius: 14px;
+      color: white;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(0,114,255,0.4);
+    }
+    button:active { transform: scale(0.96); }
+  </style>
+</head>
+<body>
+  <div>
+    <h1>🚀 My App</h1>
+    <p>Built with Tallen Studio<br>100% Free — No Subscription!</p>
+    <button onclick="alert('Hello from Tallen Studio! 🎉')">Tap Me!</button>
+  </div>
+</body>
+</html>`;
+  htmlInput.dispatchEvent(new Event('input'));
+  showToast('📄 Template inserted!');
+}
+
+// ═══════════════════════════════════
+//  ERASE MODAL
+// ═══════════════════════════════════
+function showEraseModal() { document.getElementById('eraseModal').classList.add('show'); }
+function hideModal(id) { document.getElementById(id).classList.remove('show'); }
+
+document.getElementById('eraseModal').addEventListener('click', function(e) {
+  if (e.target === this) hideModal('eraseModal');
+});
+
+function confirmErase() {
+  htmlInput.value = '';
+  htmlInput.dispatchEvent(new Event('input'));
+  codeHighlight.innerHTML = '';
+  const frame = document.getElementById('previewFrame');
+  frame.srcdoc = ''; frame.style.display = 'none';
+  document.getElementById('previewEmpty').style.display = 'flex';
+  document.getElementById('fullPreviewFrame').srcdoc = '';
+  try { localStorage.removeItem('tallen_draft_v2'); } catch(e){}
+  hideModal('eraseModal');
+  showToast('🗑️ Cleared!');
+}
+
+// ═══════════════════════════════════
+//  TOAST
+// ═══════════════════════════════════
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+// ═══════════════════════════════════
+//  SETTINGS
+// ═══════════════════════════════════
+function toggleS(item) {
+  const t = item.querySelector('.toggle');
+  if (t) t.classList.toggle('on');
+}
+
+// ═══════════════════════════════════
+//  TALLEN AI
+// ═══════════════════════════════════
+const chatArea = document.getElementById('chatArea');
+
+const AI = {
+  greet: "Hey there! 👋 Welcome to **Tallen Studio**!\n\nI'm **Tallen AI** — your personal HTML app builder assistant. I'm here 24/7 to help you create amazing apps for free! 🚀\n\nWhat should I make for you today?\n\nA website? A calendar? A calculator? Just type your **full HTML code** in the Editor box — I work with HTML, not plain English descriptions. Give me your code and I'll run it instantly!",
+  name: "My name is **Tallen AI** 🤖 — the intelligent assistant powering Tallen Studio. I was built specifically to help creators build HTML apps from their phone!",
+  who: "I'm **Tallen AI**, a smart assistant created to power Tallen Studio. I help you write, preview, upload, and download HTML apps — all 100% free!",
+  creator: "I was created by **Tallen** 👑 — a brilliant app developer who wanted to give everyone the power to build apps for free. Tallen built me to be your always-available coding assistant!",
+  app: "**Tallen Studio** was built by **Tallen** 👑 — the same genius who created me! This app lets you write HTML, preview it in a real phone frame, do a fullscreen preview, upload .html files, and download your app — all for **FREE, forever!**",
+  howAreYou: "I'm doing absolutely amazing, thank you! 🌟 Fully powered up and ready to help. What would you like to build today?",
+  free: "Yes! Tallen Studio is **100% FREE** 🎉 — forever! No monthly fees, no premium plans, no tricks. Unlike other apps that force subscriptions, Tallen Studio will never charge you a single penny. Build unlimited apps, forever free!",
+  makeApp: "I love your energy! 🚀 Let's build something great!\n\nHere's the thing — I'm an **HTML AI**, not an English AI. I can't generate an app from a description, but here's what to do:\n\n1️⃣ Go to the **Editor** tab\n2️⃣ Paste your full HTML code\n3️⃣ Tap **▶ Preview** to see it live in the phone frame\n4️⃣ Tap **⛶ Full Preview** to see it fullscreen!\n\nJust press Preview and see your app! ✅",
+  website: "Ah, great choice! 🌐 A website is a wonderful idea!\n\nPaste your complete HTML website code into the **Editor**, then tap **▶ Preview** — it loads instantly in a phone frame! Want to see it fullscreen? Hit **⛶ Full Preview**!\n\nJust press Preview and see your app! ✅ It's 100% that easy — and it's free!",
+  calculator: "A calculator — smart choice! 🧮\n\nPaste your full HTML calculator code into the **Editor**, tap **▶ Preview** and watch it run live! For a bigger view, use **⛶ Full Preview**.\n\nJust press Preview and see your app! ✅",
+  calendar: "A calendar — excellent! 📅\n\nPaste your complete HTML calendar code into the **Editor**, hit **▶ Preview** to see it in the phone frame, or **⛶ Full Preview** for fullscreen!\n\nJust press Preview and see your app! ✅",
+  preview: "To preview your HTML app:\n\n1️⃣ Open the **Editor** tab (✏️)\n2️⃣ Paste your full HTML code\n3️⃣ Tap **▶ Preview** for phone frame view\n4️⃣ Tap **⛶ Full Preview** for fullscreen!\n\nEverything shows and runs perfectly! 📱",
+  upload: "To upload an HTML file:\n\n1️⃣ Go to the **Editor** tab\n2️⃣ Tap the orange **📂 Upload** button\n3️⃣ Pick your .html file from your device\n4️⃣ It loads automatically into the editor!\n5️⃣ Then tap **▶ Preview** to run it!\n\nSupports files up to 5MB — works perfectly! ✅",
+  download: "To download your app:\n\n1️⃣ Make sure your HTML is in the **Editor**\n2️⃣ Tap **⬇ Save** or **⬇ Download**\n3️⃣ Your file saves as `tallen-app.html`\n\nA real, working HTML file on your device! 🎉",
+  full: "The **Full Preview** button (⛶) shows your app fullscreen — everything showing, no phone frame borders, no restrictions! It's like running your app natively on your device.\n\nTap **⛶ Full Preview** in the Preview screen to activate it! 📱",
+  defaults: [
+    "That's a great question! 😊 I'm Tallen AI — always here to help. Want to build something? Go to the **Editor**, paste your HTML, and tap **▶ Preview** or **⛶ Full Preview**!",
+    "Interesting! Remember — for the best experience, paste your full HTML in the Editor and tap Preview. Need help? Just ask me anything! 🤖",
+    "Got it! I'm here 24/7 to help you build. Head to the **Editor**, paste your code, and watch it come to life in the phone frame — or go fully fullscreen! ✨",
+  ]
+};
+
+let defIdx = 0;
+function getResponse(msg) {
+  const m = msg.toLowerCase();
+  if (m.match(/^(hi|hey|hello|sup|yo|hiya|howdy|hellow)/)) return AI.greet;
+  if (m.includes('your name') || m.match(/^what.*name|^name/)) return AI.name;
+  if (m.match(/who (are|r) you/)) return AI.who;
+  if (m.match(/who (made|built|created|developed) you|your (creator|developer|maker)/)) return AI.creator;
+  if (m.match(/who (made|built|created|developed) (this|the) app/)) return AI.app;
+  if (m.match(/how are you|hows it|how r you/)) return AI.howAreYou;
+  if (m.match(/free|cost|price|subscription|pay|charge|money/)) return AI.free;
+  if (m.match(/full.?preview|fullscreen|full screen/)) return AI.full;
+  if (m.match(/upload|open file|pick file|file/)) return AI.upload;
+  if (m.match(/download|save.*file|export/)) return AI.download;
+  if (m.match(/preview|how.*see|view.*app/)) return AI.preview;
+  if (m.match(/website|web site|web app/)) return AI.website;
+  if (m.match(/calculator/)) return AI.calculator;
+  if (m.match(/calendar/)) return AI.calendar;
+  if (m.match(/make.*app|build.*app|create.*app|i want.*(app|website|site)|make me/)) return AI.makeApp;
+  if (m.match(/html|code|paste/)) return AI.makeApp;
+  return AI.defaults[defIdx++ % AI.defaults.length];
+}
+
+function addMsg(text, role) {
+  const div = document.createElement('div');
+  div.className = `chat-msg ${role}`;
+  const icon = document.createElement('div');
+  icon.className = `chat-icon ${role}`;
+  icon.textContent = role === 'ai' ? '🤖' : '👤';
+  const bubble = document.createElement('div');
+  bubble.className = 'chat-bubble';
+  bubble.innerHTML = text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
+  div.appendChild(icon);
+  div.appendChild(bubble);
+  chatArea.appendChild(div);
+  chatArea.scrollTop = chatArea.scrollHeight;
+}
+
+function showTyping() {
+  const d = document.createElement('div');
+  d.className = 'chat-msg ai'; d.id = 'typing';
+  d.innerHTML = `<div class="chat-icon ai">🤖</div><div class="typing-dots"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>`;
+  chatArea.appendChild(d);
+  chatArea.scrollTop = chatArea.scrollHeight;
+}
+function hideTyping() { const t = document.getElementById('typing'); if(t) t.remove(); }
+
+function sendMessage() {
+  const input = document.getElementById('chatInput');
+  const msg = input.value.trim();
+  if (!msg) return;
+  addMsg(msg, 'user');
+  input.value = '';
+  input.style.height = '';
+  showTyping();
+  const resp = getResponse(msg);
+  const delay = 700 + Math.random() * 600;
+  setTimeout(() => {
+    hideTyping();
+    addMsg(resp, 'ai');
+    const m = msg.toLowerCase();
+    if (m.match(/website|calculator|calendar|html|code|app|make|build/)) {
+      setTimeout(() => {
+        addMsg("Ready? Go to **Editor**, paste your HTML and tap **▶ Preview** — or **⛶ Full Preview** for fullscreen! 👇", 'ai');
+      }, 700);
+    }
+  }, delay);
+}
+
+function sendChip(text) {
+  document.getElementById('chatInput').value = text;
+  sendMessage();
+}
+function handleChatKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+}
+function autoResizeInput(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+}
+
+// Init AI greeting
+setTimeout(() => addMsg(AI.greet, 'ai'), 400);
+
+// ═══════════════════════════════════
+//  SPLASH → HOME
+// ═══════════════════════════════════
+setTimeout(() => {
+  const splash = document.getElementById('splash');
+  const home = document.getElementById('home');
+  splash.style.transition = 'opacity .55s';
+  splash.style.opacity = '0';
+  setTimeout(() => {
+    splash.classList.remove('active');
+    home.classList.add('active');
+    currentScreen = 'home';
+  }, 550);
+}, 2800);
+</script>
+</body>
+</html>
